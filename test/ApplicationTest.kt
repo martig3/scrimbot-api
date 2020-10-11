@@ -1,24 +1,21 @@
 package com.martige
 
 import io.ktor.application.*
-import io.ktor.response.*
-import io.ktor.request.*
-import io.ktor.features.*
-import io.ktor.routing.*
 import io.ktor.http.*
-import com.fasterxml.jackson.databind.*
-import io.ktor.jackson.*
-import io.ktor.client.*
-import kotlin.test.*
 import io.ktor.server.testing.*
+import kotlin.test.Ignore
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class ApplicationTest {
     @Test
+    @Ignore
     fun testRoot() {
-        withTestApplication({ module(testing = true) }) {
-            handleRequest(HttpMethod.Get, "/").apply {
+        withTestApplication(Application::module) {
+            handleRequest(HttpMethod.Get, "/api/server/online?serverid=5f79568d3fb31f923b109df9").apply {
                 assertEquals(HttpStatusCode.OK, response.status())
-                assertEquals("HELLO WORLD!", response.content)
+                assertNotNull(response.content)
             }
         }
     }
