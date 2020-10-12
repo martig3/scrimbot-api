@@ -89,7 +89,7 @@ fun Application.module(testing: Boolean = false) {
                             .map { it.on }
                             .firstOrNull()
                         serverOn?.let { call.respond(it) }
-                        call.respond(HttpStatusCode.NotFound)
+                        call.respond(HttpStatusCode.NoContent)
                     }
                 }
             }
