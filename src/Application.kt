@@ -34,7 +34,8 @@ fun Application.module(testing: Boolean = false) {
     embeddedServer(Netty, port) {
         install(CORS) {
             method(HttpMethod.Post)
-            anyHost() // @TODO: Don't do this in production if possible. Try to limit it.
+            method(HttpMethod.Get)
+            host("dathost.net", listOf("https"), emptyList())
         }
 
         install(ContentNegotiation) {
