@@ -46,12 +46,12 @@ fun Application.module(testing: Boolean = false) {
         }
         val auth64String = "Basic " + Base64.getEncoder()
             .encodeToString(
-                "${UploadService.props.getProperty("dathost.username")}:${UploadService.props.getProperty("dathost.password")}"
+                "${System.getenv("dathost_username")}:${System.getenv("dathost_password")}"
                     .toByteArray()
             )
         val jda = JDABuilder
             .create(
-                UploadService.props.getProperty("discord.bot.token"),
+                System.getenv("discord_bot_token"),
                 EnumSet.noneOf(GatewayIntent::class.java)
             )
             .setMemberCachePolicy(MemberCachePolicy.NONE)
@@ -99,9 +99,4 @@ fun Application.module(testing: Boolean = false) {
     }.start(wait = true)
 }
 
-fun loadProps(): Properties {
-    val props = Properties()
-    props.load(FileInputStream("application.properties"))
-    return props
-}
 

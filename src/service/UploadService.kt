@@ -2,7 +2,6 @@ package com.martige.service
 
 import com.dropbox.core.DbxRequestConfig
 import com.dropbox.core.v2.DbxClientV2
-import com.martige.loadProps
 import io.ktor.client.*
 import io.ktor.client.request.*
 import model.DathostServerInfo
@@ -17,10 +16,9 @@ import java.time.Year
 class UploadService {
     companion object {
         private val log: Logger = LoggerFactory.getLogger(UploadService::class.java)
-        var props = loadProps()
-        private var dropboxToken = props.getProperty("dropbox.token")
-        private var dropboxAppName = props.getProperty("dropbox.app.name")
-        private var discordTextChannelId: Long = props.getProperty("discord.textchannel.id").toLong()
+        private var dropboxToken = System.getenv("dropbox_token")
+        private var dropboxAppName = System.getenv("dropbox_app_name")
+        private var discordTextChannelId: Long = System.getenv("discord_textchannel_id").toLong()
         private var config: DbxRequestConfig = DbxRequestConfig.newBuilder("dropbox/$dropboxAppName").build()
         private lateinit var dropboxClient: DbxClientV2
     }
