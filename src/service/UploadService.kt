@@ -47,6 +47,7 @@ class UploadService {
             .firstOrNull() ?: "Unknown Map"
         val uploadPath =
             "/${Year.now()}-${MonthDay.now().month.value}-${MonthDay.now().dayOfMonth}_pug_${map}_$filename.dem"
+        dropboxClient = DbxClientV2(config, dropboxToken)
         getGameServerFile(demoFileUrl).use { response ->
             response.body?.byteStream().use { `in` ->
                 dropboxClient.files().uploadBuilder(uploadPath)
@@ -54,7 +55,6 @@ class UploadService {
                 log.info("Uploaded $uploadPath successfully")
             }
         }
-        dropboxClient = DbxClientV2(config, dropboxToken)
         val shareLink = dropboxClient.sharing().createSharedLinkWithSettings(uploadPath)
         val channel = jda.getTextChannelById(discordTextChannelId)
         channel?.sendMessage("New `.dem` replay files are available: \n$map - ${shareLink.url}")?.queue()
