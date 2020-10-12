@@ -35,7 +35,8 @@ fun Application.module(testing: Boolean = false) {
         install(CORS) {
             method(HttpMethod.Post)
             method(HttpMethod.Get)
-            host("dathost.net", listOf("https"), emptyList())
+//            host("dathost.net", listOf("https"), emptyList())
+            anyHost()
         }
 
         install(ContentNegotiation) {
