@@ -22,7 +22,6 @@ import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.MemberCachePolicy
 import net.dv8tion.jda.api.utils.cache.CacheFlag
-import java.io.FileInputStream
 import java.util.*
 
 fun main(args: Array<String>): Unit = EngineMain.main(args)
@@ -89,7 +88,10 @@ fun Application.module(testing: Boolean = false) {
                             .filter { it.id == serverId }
                             .map { it.on }
                             .firstOrNull()
-                        serverOn?.let { call.respond(it) }
+                        serverOn?.let {
+                            call.respond(it)
+                            return@get
+                        }
                         call.respond(HttpStatusCode.NoContent)
                     }
                 }
