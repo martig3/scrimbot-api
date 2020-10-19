@@ -4,6 +4,7 @@ import com.dropbox.core.DbxRequestConfig
 import com.dropbox.core.v2.DbxClientV2
 import io.ktor.client.*
 import io.ktor.client.request.*
+import kotlinx.coroutines.delay
 import model.DathostServerInfo
 import net.dv8tion.jda.api.JDA
 import okhttp3.OkHttpClient
@@ -47,6 +48,7 @@ class UploadService {
             .firstOrNull() ?: "Unknown Map"
         val uploadPath =
             "/${Year.now()}-${MonthDay.now().month.value}-${MonthDay.now().dayOfMonth}_pug_${map}_$filename.dem"
+        delay(120000)
         dropboxClient = DbxClientV2(config, dropboxToken)
         getGameServerFile(demoFileUrl).use { response ->
             response.body?.byteStream().use { `in` ->
