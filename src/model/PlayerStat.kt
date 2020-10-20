@@ -1,8 +1,8 @@
 package model
 
 data class PlayerStat(
-    val assists: Int?,
-    val deaths: Int?,
-    val kills: Int?,
-    val steam_id: String?
+    val assists: Int,
+    val deaths: Int,
+    val kills: Int,
+    val steam_id: String
 )

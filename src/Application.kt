@@ -15,6 +15,8 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.netty.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import model.DathostServerInfo
 import model.Match
 import net.dv8tion.jda.api.JDABuilder
@@ -73,7 +75,10 @@ fun Application.module(testing: Boolean = false) {
         route("/api") {
             post("/match-end") {
                 val match = call.receive<Match>()
-                UploadService().uploadDemo(match.id, match.game_server_id, client, jda)
+                GlobalScope.launch {
+                    UploadService().uploadDemo(match.id, match.game_server_id, client, jda)
+                }
+                UploadService().uploadStatistics(match)
                 call.respond(HttpStatusCode.OK)
             }
             route("/server") {
