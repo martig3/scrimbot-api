@@ -14,15 +14,6 @@ object MatchData: Table() {
     val createTime: Column<DateTime> = date("create_time")
 }
 
-data class PlayerMatchData(
-    val steamId: String,
-    val matchId: String,
-    val kills: Int,
-    val deaths: Int,
-    val assists: Int,
-    val createTime: DateTime,
-)
-
 data class Stats(
     val steamId: String,
     val totalKills: Int,

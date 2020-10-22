@@ -2,11 +2,13 @@ package com.martige
 
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import io.ktor.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class ApplicationTest {
+    @KtorExperimentalAPI
     @Test
     fun testRoot() {
         withTestApplication({ module(testing = true) }) {
