@@ -11,11 +11,12 @@ import org.joda.time.DateTime
 
 class StatisticsService {
 
-
     fun uploadStatistics(match: Match) {
         val matchId = match.id
         match.player_stats?.forEach {
+            println("Inserting match data for '${it.steam_id}'")
             val steamIdUpdated = it.steam_id.replaceRange(6, 7, "1")
+            println("Updated steam id to '$steamIdUpdated'")
             val kills = it.kills
             val assists = it.assists
             val deaths = it.deaths
