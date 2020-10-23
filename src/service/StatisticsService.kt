@@ -14,9 +14,9 @@ class StatisticsService {
     fun uploadStatistics(match: Match) {
         val matchId = match.id
         match.player_stats?.forEach {
-            println("Inserting match data for '${it.steam_id}'")
-            val steamIdUpdated = it.steam_id.replaceRange(6, 7, "1")
-            println("Updated steam id to '$steamIdUpdated'")
+            println("Processing data for '${it.steam_id}'")
+            if (!it.steam_id.trim().startsWith("STEAM", true)) { return@forEach }
+            val steamIdUpdated = it.steam_id.trim().replaceRange(6, 7, "1")
             val kills = it.kills
             val assists = it.assists
             val deaths = it.deaths
