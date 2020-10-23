@@ -1,6 +1,7 @@
 package com.martige
 
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.martige.service.StatisticsService
 import com.martige.service.UploadService
 import io.ktor.application.*
 import io.ktor.client.*
@@ -15,6 +16,9 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.netty.*
+import io.ktor.util.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import model.DathostServerInfo
 import model.Match
 import net.dv8tion.jda.api.JDABuilder
@@ -25,13 +29,14 @@ import java.util.*
 
 fun main(args: Array<String>): Unit = EngineMain.main(args)
 
+@KtorExperimentalAPI
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
     install(CORS) {
         method(HttpMethod.Post)
         method(HttpMethod.Get)
-//            host("dathost.net", listOf("https"), emptyList())
+            host("dathost.net", listOf("https"), emptyList())
         anyHost()
     }
 
@@ -69,12 +74,27 @@ fun Application.module(testing: Boolean = false) {
             accept(ContentType.Application.Json)
         }
     }
+
+    DatabaseFactory.init()
+
     routing {
         route("/api") {
             post("/match-end") {
                 val match = call.receive<Match>()
-                UploadService().uploadDemo(match.id, match.game_server_id, client, jda)
+                GlobalScope.launch {
+                    UploadService().uploadDemo(match.id, match.game_server_id, client, jda)
+                }
+                StatisticsService().uploadStatistics(match)
                 call.respond(HttpStatusCode.OK)
+            }
+            get("/stats") {
+                val steamId: String = call.parameters["steamid"].toString()
+                val result = StatisticsService().getStatistics(steamId)
+                result?.let {
+                    call.respond(it)
+                    return@get
+                }
+                call.respond(HttpStatusCode.NoContent)
             }
             route("/server") {
                 get("/online") {
