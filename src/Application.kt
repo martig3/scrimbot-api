@@ -36,7 +36,7 @@ fun Application.module(testing: Boolean = false) {
     install(CORS) {
         method(HttpMethod.Post)
         method(HttpMethod.Get)
-//            host("dathost.net", listOf("https"), emptyList())
+            host("dathost.net", listOf("https"), emptyList())
         anyHost()
     }
 
@@ -74,6 +74,7 @@ fun Application.module(testing: Boolean = false) {
             accept(ContentType.Application.Json)
         }
     }
+
     DatabaseFactory.init()
 
     routing {
@@ -83,11 +84,6 @@ fun Application.module(testing: Boolean = false) {
                 GlobalScope.launch {
                     UploadService().uploadDemo(match.id, match.game_server_id, client, jda)
                 }
-                StatisticsService().uploadStatistics(match)
-                call.respond(HttpStatusCode.OK)
-            }
-            post("/match-data") {
-                val match = call.receive<Match>()
                 StatisticsService().uploadStatistics(match)
                 call.respond(HttpStatusCode.OK)
             }
