@@ -1,6 +1,7 @@
 package com.martige
 
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.martige.model.Stats
 import com.martige.service.StatisticsService
 import com.martige.service.UploadService
 import io.ktor.application.*
@@ -36,7 +37,7 @@ fun Application.module(testing: Boolean = false) {
     install(CORS) {
         method(HttpMethod.Post)
         method(HttpMethod.Get)
-            host("dathost.net", listOf("https"), emptyList())
+        host("dathost.net", listOf("https"), emptyList())
         anyHost()
     }
 
@@ -89,12 +90,16 @@ fun Application.module(testing: Boolean = false) {
             }
             get("/stats") {
                 val steamId: String = call.parameters["steamid"].toString()
-                val result = StatisticsService().getStatistics(steamId)
-                result?.let {
+                val results: List<Stats>? = when (call.parameters["option"].toString()) {
+                    "top5" -> StatisticsService().getTopFivePlayers()
+                    "range" -> StatisticsService().getMonthRangeStats(steamId, call.parameters["length"].toString())
+                    else -> StatisticsService().getStatistics(steamId)
+                }
+                results?.let {
                     call.respond(it)
                     return@get
                 }
-                call.respond(HttpStatusCode.NoContent)
+                call.respond(HttpStatusCode.BadRequest)
             }
             route("/server") {
                 get("/online") {

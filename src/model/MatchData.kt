@@ -19,4 +19,5 @@ data class Stats(
     val totalKills: Int,
     val totalDeaths: Int,
     val totalAssists: Int,
+    var kdRatio: Float,
 )
