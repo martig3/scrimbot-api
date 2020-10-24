@@ -57,7 +57,7 @@ class StatisticsService {
 
     }
 
-    fun getTopFivePlayers(): List<Stats> {
+    fun getTopTenPlayers(): List<Stats> {
         return transaction {
             MatchData.slice(
                 MatchData.steamId,
@@ -73,7 +73,7 @@ class StatisticsService {
                     MatchData.kills.sum().castTo<Float>(FloatColumnType())
                         .div(MatchData.deaths.sum().castTo(FloatColumnType())) to SortOrder.DESC
                 )
-                .limit(5)
+                .limit(10)
                 .map {
                     Stats(
                         it[MatchData.steamId],

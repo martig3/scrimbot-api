@@ -91,7 +91,7 @@ fun Application.module(testing: Boolean = false) {
             get("/stats") {
                 val steamId: String = call.parameters["steamid"].toString()
                 val results: List<Stats>? = when (call.parameters["option"].toString()) {
-                    "top5" -> StatisticsService().getTopFivePlayers()
+                    "top10" -> StatisticsService().getTopTenPlayers()
                     "range" -> StatisticsService().getMonthRangeStats(steamId, call.parameters["length"].toString())
                     else -> StatisticsService().getStatistics(steamId)
                 }
