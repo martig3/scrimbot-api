@@ -3,9 +3,8 @@ package com.martige.service
 import com.martige.model.MatchData
 import com.martige.model.Stats
 import model.Match
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.sum
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.div
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 
@@ -15,7 +14,9 @@ class StatisticsService {
         val matchId = match.id
         match.player_stats?.forEach {
             println("Processing data for '${it.steam_id}'")
-            if (!it.steam_id.trim().startsWith("STEAM", true)) { return@forEach }
+            if (!it.steam_id.trim().startsWith("STEAM", true)) {
+                return@forEach
+            }
             val steamIdUpdated = it.steam_id.trim().replaceRange(6, 7, "1")
             val kills = it.kills
             val assists = it.assists
@@ -33,22 +34,90 @@ class StatisticsService {
         }
     }
 
-    fun getStatistics(steamId: String): Stats? {
+    fun getStatistics(steamId: String): List<Stats> {
         return transaction {
             MatchData.slice(
                 MatchData.steamId,
                 MatchData.kills.sum(),
                 MatchData.deaths.sum(),
-                MatchData.assists.sum()
+                MatchData.assists.sum(),
+                MatchData.kills.sum().castTo<Float>(FloatColumnType())
+                    .div(MatchData.deaths.sum().castTo(FloatColumnType())),
             ).select { MatchData.steamId.eq(steamId) }.groupBy(MatchData.steamId).map {
                 Stats(
                     it[MatchData.steamId],
                     it[MatchData.kills.sum()] ?: 0,
                     it[MatchData.deaths.sum()] ?: 0,
-                    it[MatchData.assists.sum()] ?: 0
+                    it[MatchData.assists.sum()] ?: 0,
+                    (it[MatchData.kills.sum().castTo<Float>(FloatColumnType())
+                        .div(MatchData.deaths.sum().castTo(FloatColumnType()))] ?: Float.MIN_VALUE),
                 )
-            }.firstOrNull()
+            }
         }
 
+    }
+
+    fun getTopTenPlayers(): List<Stats> {
+        return transaction {
+            MatchData.slice(
+                MatchData.steamId,
+                MatchData.kills.sum(),
+                MatchData.deaths.sum(),
+                MatchData.assists.sum(),
+                MatchData.kills.sum().castTo<Float>(FloatColumnType())
+                    .div(MatchData.deaths.sum().castTo(FloatColumnType()))
+            ).selectAll()
+                .having { MatchData.kills.sum().greaterEq(200) }
+                .groupBy(MatchData.steamId)
+                .orderBy(
+                    MatchData.kills.sum().castTo<Float>(FloatColumnType())
+                        .div(MatchData.deaths.sum().castTo(FloatColumnType())) to SortOrder.DESC
+                )
+                .limit(10)
+                .map {
+                    Stats(
+                        it[MatchData.steamId],
+                        it[MatchData.kills.sum()] ?: 0,
+                        it[MatchData.deaths.sum()] ?: 0,
+                        it[MatchData.assists.sum()] ?: 0,
+                        (it[MatchData.kills.sum().castTo<Float>(FloatColumnType())
+                            .div(MatchData.deaths.sum().castTo(FloatColumnType()))] ?: Float.MIN_VALUE),
+                    )
+                }
+        }
+    }
+
+    fun getMonthRangeStats(steamId: String, length: String): List<Stats>? {
+
+        try {
+            length.toInt()
+        } catch (e: NumberFormatException) {
+            return null
+        }
+        val pastTime = DateTime().minusMonths(length.toInt())
+        return transaction {
+            MatchData.slice(
+                MatchData.steamId,
+                MatchData.kills.sum(),
+                MatchData.deaths.sum(),
+                MatchData.assists.sum(),
+                MatchData.kills.sum().castTo<Float>(FloatColumnType())
+                    .div(MatchData.deaths.sum().castTo(FloatColumnType())),
+            ).select {
+                MatchData.steamId.eq(steamId)
+                    .and(MatchData.createTime.greaterEq(pastTime))
+                    .and(MatchData.matchId.notLike("init%"))
+            }
+                .groupBy(MatchData.steamId).map {
+                    Stats(
+                        it[MatchData.steamId],
+                        it[MatchData.kills.sum()] ?: 0,
+                        it[MatchData.deaths.sum()] ?: 0,
+                        it[MatchData.assists.sum()] ?: 0,
+                        (it[MatchData.kills.sum().castTo<Float>(FloatColumnType())
+                            .div(MatchData.deaths.sum().castTo(FloatColumnType()))] ?: Float.MIN_VALUE),
+                    )
+                }
+        }
     }
 }
