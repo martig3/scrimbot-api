@@ -13,7 +13,6 @@ class StatisticsService {
     fun uploadStatistics(match: Match) {
         val matchId = match.id
         match.player_stats?.forEach {
-            println("Processing data for '${it.steam_id}'")
             if (!it.steam_id.trim().startsWith("STEAM", true)) {
                 return@forEach
             }
@@ -87,14 +86,44 @@ class StatisticsService {
         }
     }
 
-    fun getMonthRangeStats(steamId: String, length: String): List<Stats>? {
-
-        try {
-            length.toInt()
-        } catch (e: NumberFormatException) {
+    fun getTopTenPlayersMonthRange(length: Int?): List<Stats>? {
+        if (length == null) {
             return null
         }
-        val pastTime = DateTime().minusMonths(length.toInt())
+        val pastTime = DateTime().minusMonths(length)
+        return transaction {
+            MatchData.slice(
+                MatchData.steamId,
+                MatchData.kills.sum(),
+                MatchData.deaths.sum(),
+                MatchData.assists.sum(),
+                MatchData.kills.sum().castTo<Float>(FloatColumnType())
+                    .div(MatchData.deaths.sum().castTo(FloatColumnType()))
+            ).select { MatchData.createTime.greaterEq(pastTime).and(MatchData.matchId.notLike("init%")) }
+                .groupBy(MatchData.steamId)
+                .orderBy(
+                    MatchData.kills.sum().castTo<Float>(FloatColumnType())
+                        .div(MatchData.deaths.sum().castTo(FloatColumnType())) to SortOrder.DESC
+                )
+                .limit(10)
+                .map {
+                    Stats(
+                        it[MatchData.steamId],
+                        it[MatchData.kills.sum()] ?: 0,
+                        it[MatchData.deaths.sum()] ?: 0,
+                        it[MatchData.assists.sum()] ?: 0,
+                        (it[MatchData.kills.sum().castTo<Float>(FloatColumnType())
+                            .div(MatchData.deaths.sum().castTo(FloatColumnType()))] ?: Float.MIN_VALUE),
+                    )
+                }
+        }
+    }
+
+    fun getMonthRangeStats(steamId: String, length: Int?): List<Stats>? {
+        if (length == null) {
+            return null
+        }
+        val pastTime = DateTime().minusMonths(length)
         return transaction {
             MatchData.slice(
                 MatchData.steamId,

@@ -90,9 +90,12 @@ fun Application.module(testing: Boolean = false) {
             }
             get("/stats") {
                 val steamId: String = call.parameters["steamid"].toString()
-                val results: List<Stats>? = when (call.parameters["option"].toString()) {
-                    "top10" -> StatisticsService().getTopTenPlayers()
-                    "range" -> StatisticsService().getMonthRangeStats(steamId, call.parameters["length"].toString())
+                val length: Int? = call.parameters["length"]?.toIntOrNull()
+                val lengthParamExists: Boolean = call.parameters["length"]?.toIntOrNull() ?: -1 > 0
+                val results: List<Stats>? = when (call.parameters["option"].toString() to lengthParamExists) {
+                    "top10" to false -> StatisticsService().getTopTenPlayers()
+                    "top10" to true -> StatisticsService().getTopTenPlayersMonthRange(length)
+                    "range" to true -> StatisticsService().getMonthRangeStats(steamId, length)
                     else -> StatisticsService().getStatistics(steamId)
                 }
                 results?.let {
