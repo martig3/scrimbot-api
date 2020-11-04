@@ -2,19 +2,14 @@ package com.martige.service
 
 import com.dropbox.core.DbxRequestConfig
 import com.dropbox.core.v2.DbxClientV2
-import com.martige.model.MatchData
 import io.ktor.client.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.delay
 import model.DathostServerInfo
-import model.Match
 import net.dv8tion.jda.api.JDA
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.transactions.transaction
-import org.joda.time.DateTime
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.MonthDay
