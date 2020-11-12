@@ -18,6 +18,7 @@ import io.ktor.routing.*
 import io.ktor.server.netty.*
 import io.ktor.util.*
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import model.DathostServerInfo
 import model.Match
@@ -82,6 +83,7 @@ fun Application.module(testing: Boolean = false) {
             post("/match-end") {
                 val match = call.receive<Match>()
                 GlobalScope.launch {
+                    delay(140000)
                     UploadService().uploadDemo(match.id, match.game_server_id, client, jda)
                 }
                 StatisticsService().uploadStatistics(match)
