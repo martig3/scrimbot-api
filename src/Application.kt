@@ -85,18 +85,21 @@ fun Application.module(testing: Boolean = false) {
                 GlobalScope.launch {
                     UploadService().uploadDemo(match.id, match.game_server_id, client, jda)
                 }
-                StatisticsService().uploadStatistics(match)
+                StatisticsService().uploadStatistics(match, match.game_server_id, client)
                 call.respond(HttpStatusCode.OK)
             }
             get("/stats") {
                 val steamId: String = call.parameters["steamid"].toString()
                 val length: Int? = call.parameters["length"]?.toIntOrNull()
+                val mapName: String = call.parameters["map"] ?: ""
                 val lengthParamExists: Boolean = call.parameters["length"]?.toIntOrNull() ?: -1 > 0
                 val results: List<Stats>? = when (call.parameters["option"].toString() to lengthParamExists) {
-                    "top10" to false -> StatisticsService().getTopTenPlayers()
-                    "top10" to true -> StatisticsService().getTopTenPlayersMonthRange(length)
-                    "range" to true -> StatisticsService().getMonthRangeStats(steamId, length)
-                    else -> StatisticsService().getStatistics(steamId)
+                    "top10" to false -> StatisticsService().getTopTenPlayers(mapName)
+                    "top10" to true -> StatisticsService().getTopTenPlayersMonthRange(length, mapName)
+                    "range" to true -> StatisticsService().getMonthRangeStats(steamId, length, mapName)
+                    "maps" to false -> StatisticsService().getTopMaps(steamId)
+                    "maps" to true -> StatisticsService().getTopMapsRange(steamId, length)
+                    else -> StatisticsService().getStatistics(steamId, mapName)
                 }
                 results?.let {
                     call.respond(it)
