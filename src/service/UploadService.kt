@@ -39,6 +39,7 @@ class UploadService {
     }
 
     suspend fun uploadDemo(filename: String, gameServerId: String, client: HttpClient, jda: JDA) {
+        delay(120000)
         val demoFileUrl = "https://dathost.net/api/0.1/game-servers/$gameServerId/files/$filename.dem"
         val serverListUrl = "https://dathost.net/api/0.1/game-servers"
         val serverList: List<DathostServerInfo> = client.get(serverListUrl)
@@ -48,7 +49,7 @@ class UploadService {
             .firstOrNull() ?: "Unknown Map"
         val uploadPath =
             "/${Year.now()}-${MonthDay.now().month.value}-${MonthDay.now().dayOfMonth}_pug_${map}_$filename.dem"
-        delay(120000)
+        log.info("Uploading $filename.dem...")
         dropboxClient = DbxClientV2(config, dropboxToken)
         getGameServerFile(demoFileUrl).use { response ->
             response.body?.byteStream().use { `in` ->
