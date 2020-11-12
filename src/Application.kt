@@ -1,6 +1,7 @@
 package com.martige
 
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.martige.model.Stats
 import com.martige.service.StatisticsService
 import com.martige.service.UploadService
 import io.ktor.application.*
@@ -37,7 +38,7 @@ fun Application.module(testing: Boolean = false) {
     install(CORS) {
         method(HttpMethod.Post)
         method(HttpMethod.Get)
-            host("dathost.net", listOf("https"), emptyList())
+        host("dathost.net", listOf("https"), emptyList())
         anyHost()
     }
 
@@ -86,17 +87,27 @@ fun Application.module(testing: Boolean = false) {
                     delay(140000)
                     UploadService().uploadDemo(match.id, match.game_server_id, client, jda)
                 }
-                StatisticsService().uploadStatistics(match)
+                StatisticsService().uploadStatistics(match, match.game_server_id, client)
                 call.respond(HttpStatusCode.OK)
             }
             get("/stats") {
                 val steamId: String = call.parameters["steamid"].toString()
-                val result = StatisticsService().getStatistics(steamId)
-                result?.let {
+                val length: Int? = call.parameters["length"]?.toIntOrNull()
+                val mapName: String = call.parameters["map"] ?: ""
+                val lengthParamExists: Boolean = call.parameters["length"]?.toIntOrNull() ?: -1 > 0
+                val results: List<Stats>? = when (call.parameters["option"].toString() to lengthParamExists) {
+                    "top10" to false -> StatisticsService().getTopTenPlayers(mapName)
+                    "top10" to true -> StatisticsService().getTopTenPlayersMonthRange(length, mapName)
+                    "range" to true -> StatisticsService().getMonthRangeStats(steamId, length, mapName)
+                    "maps" to false -> StatisticsService().getTopMaps(steamId)
+                    "maps" to true -> StatisticsService().getTopMapsRange(steamId, length)
+                    else -> StatisticsService().getStatistics(steamId, mapName)
+                }
+                results?.let {
                     call.respond(it)
                     return@get
                 }
-                call.respond(HttpStatusCode.NoContent)
+                call.respond(HttpStatusCode.BadRequest)
             }
             route("/server") {
                 get("/online") {
