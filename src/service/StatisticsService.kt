@@ -182,7 +182,7 @@ class StatisticsService {
                 MatchData.assists.sum(),
                 MatchData.kills.sum().castTo<Float>(FloatColumnType())
                     .div(MatchData.deaths.sum().castTo(FloatColumnType()))
-            ).select { MatchData.steamId.eq(steamId).and(MatchData.mapName.isNotNull()) }
+            ).select { MatchData.steamId.eq(steamId).and(MatchData.mapName.notLike(" ")) }
                 .groupBy(MatchData.steamId, MatchData.mapName)
                 .orderBy(
                     MatchData.kills.sum().castTo<Float>(FloatColumnType())
@@ -217,7 +217,7 @@ class StatisticsService {
                 MatchData.assists.sum(),
                 MatchData.kills.sum().castTo<Float>(FloatColumnType())
                     .div(MatchData.deaths.sum().castTo(FloatColumnType()))
-            ).select { MatchData.steamId.eq(steamId).and(MatchData.createTime.greaterEq(pastTime)).and(MatchData.mapName.isNotNull()) }
+            ).select { MatchData.steamId.eq(steamId).and(MatchData.createTime.greaterEq(pastTime)).and(MatchData.mapName.notLike(" ")) }
                 .groupBy(MatchData.steamId, MatchData.mapName)
                 .orderBy(
                     MatchData.kills.sum().castTo<Float>(FloatColumnType())
