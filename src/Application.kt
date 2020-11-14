@@ -38,7 +38,7 @@ fun Application.module(testing: Boolean = false) {
     install(CORS) {
         method(HttpMethod.Post)
         method(HttpMethod.Get)
-        host("dathost.net", listOf("https"), emptyList())
+//        host("dathost.net", listOf("https"), emptyList())
         anyHost()
     }
 
@@ -84,8 +84,13 @@ fun Application.module(testing: Boolean = false) {
             post("/match-end") {
                 val match = call.receive<Match>()
                 GlobalScope.launch {
-                    delay(140000)
-                    UploadService().uploadDemo(match.id, match.game_server_id, client, jda)
+                    val serverListUrl = "https://dathost.net/api/0.1/game-servers"
+                    val serverList: List<DathostServerInfo> = client.get(serverListUrl)
+                    val map = serverList
+                        .filter { it.id == match.game_server_id }
+                        .map { it.csgo_settings?.mapgroup_start_map }
+                        .firstOrNull() ?: "Unknown Map"
+                    UploadService().uploadDemo(match.id, match.game_server_id, map, jda)
                 }
                 StatisticsService().uploadStatistics(match, match.game_server_id, client)
                 call.respond(HttpStatusCode.OK)
