@@ -11,7 +11,7 @@ class ApplicationTest {
     @KtorExperimentalAPI
     @Test
     fun testRoot() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ module() }) {
             handleRequest(HttpMethod.Get, "/api/server/online?serverid=5f79568d3fb31f923b109df9").apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertNotNull(response.content)

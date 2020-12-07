@@ -32,8 +32,7 @@ fun main(args: Array<String>): Unit = EngineMain.main(args)
 
 @KtorExperimentalAPI
 @Suppress("unused") // Referenced in application.conf
-@kotlin.jvm.JvmOverloads
-fun Application.module(testing: Boolean = false) {
+fun Application.module() {
     install(CORS) {
         method(HttpMethod.Post)
         method(HttpMethod.Get)
