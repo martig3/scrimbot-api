@@ -18,5 +18,7 @@ data class Match(
     val team1_steam_ids: List<String>?,
     val team2_stats: Team2Stats?,
     val team2_steam_ids: List<String>?,
-    val warmup_time: Int?
+    val warmup_time: Int?,
+    val wait_for_spectators: Boolean?,
+    val enable_knife_round: Boolean?,
 )
