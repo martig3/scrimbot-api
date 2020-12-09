@@ -52,6 +52,10 @@ class StatisticsService {
                 MatchData.assists.sum(),
                 MatchData.kills.sum().castTo<Float>(FloatColumnType())
                     .div(MatchData.deaths.sum().castTo(FloatColumnType())),
+                MatchData.adr.avg().castTo<Float>(FloatColumnType()),
+                MatchData.hs.avg().castTo<Float>(FloatColumnType()),
+                MatchData.rating.avg().castTo<Float>(FloatColumnType()),
+                MatchData.rws.avg().castTo<Float>(FloatColumnType())
             ).select { MatchData.steamId.eq(steamId).and(MatchData.mapName.like("%$mapName%")) }
                 .groupBy(MatchData.steamId).map {
                     Stats(
@@ -62,6 +66,10 @@ class StatisticsService {
                         (it[MatchData.kills.sum().castTo<Float>(FloatColumnType())
                             .div(MatchData.deaths.sum().castTo(FloatColumnType()))] ?: Float.MIN_VALUE),
                         mapName,
+                        it[MatchData.hs.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
+                        it[MatchData.rws.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
+                        it[MatchData.adr.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
+                        it[MatchData.rating.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
                     )
                 }
         }
@@ -76,13 +84,16 @@ class StatisticsService {
                 MatchData.deaths.sum(),
                 MatchData.assists.sum(),
                 MatchData.kills.sum().castTo<Float>(FloatColumnType())
-                    .div(MatchData.deaths.sum().castTo(FloatColumnType()))
+                    .div(MatchData.deaths.sum().castTo(FloatColumnType())),
+                MatchData.adr.avg().castTo<Float>(FloatColumnType()),
+                MatchData.hs.avg().castTo<Float>(FloatColumnType()),
+                MatchData.rating.avg().castTo<Float>(FloatColumnType()),
+                MatchData.rws.avg().castTo<Float>(FloatColumnType())
             ).select { MatchData.mapName.like("%$mapName%") }
                 .having { MatchData.kills.sum().greaterEq(100) }
                 .groupBy(MatchData.steamId)
                 .orderBy(
-                    MatchData.kills.sum().castTo<Float>(FloatColumnType())
-                        .div(MatchData.deaths.sum().castTo(FloatColumnType())) to SortOrder.DESC
+                    MatchData.adr.avg().castTo<Float>(FloatColumnType()) to SortOrder.DESC
                 )
                 .limit(10)
                 .map {
@@ -93,8 +104,12 @@ class StatisticsService {
                         it[MatchData.assists.sum()] ?: 0,
                         (it[MatchData.kills.sum().castTo<Float>(FloatColumnType())
                             .div(MatchData.deaths.sum().castTo(FloatColumnType()))] ?: Float.MIN_VALUE),
-                        mapName
-                    )
+                        mapName,
+                        it[MatchData.hs.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
+                        it[MatchData.rws.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
+                        it[MatchData.adr.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
+                        it[MatchData.rating.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
+                        )
                 }
         }
     }
@@ -111,7 +126,11 @@ class StatisticsService {
                 MatchData.deaths.sum(),
                 MatchData.assists.sum(),
                 MatchData.kills.sum().castTo<Float>(FloatColumnType())
-                    .div(MatchData.deaths.sum().castTo(FloatColumnType()))
+                    .div(MatchData.deaths.sum().castTo(FloatColumnType())),
+                MatchData.adr.avg().castTo<Float>(FloatColumnType()),
+                MatchData.hs.avg().castTo<Float>(FloatColumnType()),
+                MatchData.rating.avg().castTo<Float>(FloatColumnType()),
+                MatchData.rws.avg().castTo<Float>(FloatColumnType())
             ).select {
                 MatchData.createTime.greaterEq(pastTime)
                     .and(
@@ -133,7 +152,11 @@ class StatisticsService {
                         it[MatchData.assists.sum()] ?: 0,
                         (it[MatchData.kills.sum().castTo<Float>(FloatColumnType())
                             .div(MatchData.deaths.sum().castTo(FloatColumnType()))] ?: Float.MIN_VALUE),
-                        mapName
+                        mapName,
+                        it[MatchData.hs.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
+                        it[MatchData.rws.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
+                        it[MatchData.adr.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
+                        it[MatchData.rating.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
                     )
                 }
         }
@@ -152,6 +175,10 @@ class StatisticsService {
                 MatchData.assists.sum(),
                 MatchData.kills.sum().castTo<Float>(FloatColumnType())
                     .div(MatchData.deaths.sum().castTo(FloatColumnType())),
+                MatchData.adr.avg().castTo<Float>(FloatColumnType()),
+                MatchData.hs.avg().castTo<Float>(FloatColumnType()),
+                MatchData.rating.avg().castTo<Float>(FloatColumnType()),
+                MatchData.rws.avg().castTo<Float>(FloatColumnType())
             ).select {
                 MatchData.steamId.eq(steamId)
                     .and(MatchData.createTime.greaterEq(pastTime))
@@ -166,7 +193,11 @@ class StatisticsService {
                         it[MatchData.assists.sum()] ?: 0,
                         (it[MatchData.kills.sum().castTo<Float>(FloatColumnType())
                             .div(MatchData.deaths.sum().castTo(FloatColumnType()))] ?: Float.MIN_VALUE),
-                        mapName
+                        mapName,
+                        it[MatchData.hs.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
+                        it[MatchData.rws.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
+                        it[MatchData.adr.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
+                        it[MatchData.rating.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
                     )
                 }
         }
@@ -181,7 +212,11 @@ class StatisticsService {
                 MatchData.deaths.sum(),
                 MatchData.assists.sum(),
                 MatchData.kills.sum().castTo<Float>(FloatColumnType())
-                    .div(MatchData.deaths.sum().castTo(FloatColumnType()))
+                    .div(MatchData.deaths.sum().castTo(FloatColumnType())),
+                MatchData.adr.avg().castTo<Float>(FloatColumnType()),
+                MatchData.hs.avg().castTo<Float>(FloatColumnType()),
+                MatchData.rating.avg().castTo<Float>(FloatColumnType()),
+                MatchData.rws.avg().castTo<Float>(FloatColumnType())
             ).select { MatchData.steamId.eq(steamId).and(MatchData.mapName.notLike(" ")) }
                 .groupBy(MatchData.steamId, MatchData.mapName)
                 .orderBy(
@@ -198,6 +233,10 @@ class StatisticsService {
                         (it[MatchData.kills.sum().castTo<Float>(FloatColumnType())
                             .div(MatchData.deaths.sum().castTo(FloatColumnType()))] ?: Float.MIN_VALUE),
                         it[MatchData.mapName],
+                        it[MatchData.hs.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
+                        it[MatchData.rws.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
+                        it[MatchData.adr.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
+                        it[MatchData.rating.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
                     )
                 }
         }
@@ -216,8 +255,15 @@ class StatisticsService {
                 MatchData.deaths.sum(),
                 MatchData.assists.sum(),
                 MatchData.kills.sum().castTo<Float>(FloatColumnType())
-                    .div(MatchData.deaths.sum().castTo(FloatColumnType()))
-            ).select { MatchData.steamId.eq(steamId).and(MatchData.createTime.greaterEq(pastTime)).and(MatchData.mapName.notLike(" ")) }
+                    .div(MatchData.deaths.sum().castTo(FloatColumnType())),
+                MatchData.adr.avg().castTo<Float>(FloatColumnType()),
+                MatchData.hs.avg().castTo<Float>(FloatColumnType()),
+                MatchData.rating.avg().castTo<Float>(FloatColumnType()),
+                MatchData.rws.avg().castTo<Float>(FloatColumnType())
+            ).select {
+                MatchData.steamId.eq(steamId).and(MatchData.createTime.greaterEq(pastTime))
+                    .and(MatchData.mapName.notLike(" "))
+            }
                 .groupBy(MatchData.steamId, MatchData.mapName)
                 .orderBy(
                     MatchData.kills.sum().castTo<Float>(FloatColumnType())
@@ -233,6 +279,10 @@ class StatisticsService {
                         (it[MatchData.kills.sum().castTo<Float>(FloatColumnType())
                             .div(MatchData.deaths.sum().castTo(FloatColumnType()))] ?: Float.MIN_VALUE),
                         it[MatchData.mapName],
+                        it[MatchData.hs.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
+                        it[MatchData.rws.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
+                        it[MatchData.adr.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
+                        it[MatchData.rating.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
                     )
                 }
         }

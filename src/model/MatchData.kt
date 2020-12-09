@@ -13,6 +13,10 @@ object MatchData: Table() {
     val assists: Column<Int> = integer("assists")
     val createTime: Column<DateTime> = date("create_time")
     val mapName: Column<String> = text("map_name")
+    val hs: Column<Float> = float("hs")
+    val rws: Column<Float> = float("rws")
+    val adr: Column<Float> = float("adr")
+    val rating: Column<Float> = float("rating")
 }
 
 data class Stats(
@@ -21,5 +25,9 @@ data class Stats(
     val totalDeaths: Int,
     val totalAssists: Int,
     var kdRatio: Float,
-    val map: String?,
+    val map: String,
+    var hs: Float,
+    var rws: Float,
+    var adr: Float,
+    var rating: Float,
 )
