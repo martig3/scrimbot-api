@@ -90,7 +90,7 @@ class StatisticsService {
                 MatchData.rating.avg().castTo<Float>(FloatColumnType()),
                 MatchData.rws.avg().castTo<Float>(FloatColumnType())
             ).select { MatchData.mapName.like("%$mapName%") }
-                .having { MatchData.kills.sum().greaterEq(100) }
+                .having { MatchData.kills.sum().greaterEq(100).and(MatchData.adr.sum().greater(Float.MIN_VALUE)) }
                 .groupBy(MatchData.steamId)
                 .orderBy(
                     MatchData.adr.avg().castTo<Float>(FloatColumnType()) to SortOrder.DESC
