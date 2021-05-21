@@ -17,6 +17,7 @@ object MatchData: Table() {
     val rws: Column<Float> = float("rws")
     val adr: Column<Float> = float("adr")
     val rating: Column<Float> = float("rating")
+    val match_result: Column<String> = text("match_result")
 }
 
 data class Stats(
@@ -30,4 +31,6 @@ data class Stats(
     var rws: Float,
     var adr: Float,
     var rating: Float,
+    var playCount: Int,
+    var winPercentage: Float,
 )
