@@ -2,8 +2,10 @@ buildscript {
     ext.kotlin_version = "$kotlin_version"
     ext.ktor_version = "$ktor_version"
     repositories {
+        mavenLocal()
         mavenCentral()
         jcenter()
+        maven { url 'https://kotlin.bintray.com/ktor' }
     }
 
     dependencies {
