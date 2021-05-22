@@ -31,6 +31,19 @@ class StatisticsService {
             val kills = it.kills
             val assists = it.assists
             val deaths = it.deaths
+            val playerTeamScore = when {
+                match.team1_steam_ids.contains(it.steam_id) -> match.team1_stats.score
+                else -> match.team2_stats.score
+            }
+            val enemyTeamScore = when (playerTeamScore) {
+                match.team1_stats.score -> match.team2_stats.score
+                else -> match.team1_stats.score
+            }
+            val matchResult = when {
+                playerTeamScore > enemyTeamScore -> "W"
+                playerTeamScore == enemyTeamScore -> "T"
+                else -> "L"
+            }
             transaction {
                 MatchData.insert { data ->
                     data[steamId] = steamIdUpdated
@@ -40,6 +53,7 @@ class StatisticsService {
                     data[MatchData.assists] = assists
                     data[createTime] = DateTime.now()
                     data[mapName] = map
+                    data[MatchData.matchResult] = matchResult
                 }
             }
         }
@@ -60,7 +74,7 @@ class StatisticsService {
                 MatchData.rws.avg().castTo<Float>(FloatColumnType()),
                 MatchData.matchId.count().castTo<Int>(IntegerColumnType()),
                 Sum(
-                    case().When(MatchData.match_result.eq("W"), intLiteral(1)).Else(intLiteral(0)),
+                    case().When(MatchData.matchResult.eq("W"), intLiteral(1)).Else(intLiteral(0)),
                     FloatColumnType()
                 ).div(MatchData.matchId.count().castTo(FloatColumnType())).castTo<Float>(FloatColumnType())
             ).select { MatchData.steamId.eq(steamId).and(MatchData.mapName.like("%$mapName%")) }
@@ -79,7 +93,7 @@ class StatisticsService {
                         it[MatchData.rating.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
                         it[MatchData.matchId.count().castTo(IntegerColumnType())] ?: 0,
                         it[Sum(
-                            case().When(MatchData.match_result.eq("W"), intLiteral(1)).Else(intLiteral(0)),
+                            case().When(MatchData.matchResult.eq("W"), intLiteral(1)).Else(intLiteral(0)),
                             FloatColumnType()
                         ).div(MatchData.matchId.count().castTo(FloatColumnType())).castTo(FloatColumnType())]
                             ?: Float.MIN_VALUE
@@ -104,7 +118,7 @@ class StatisticsService {
                 MatchData.rws.avg().castTo<Float>(FloatColumnType()),
                 MatchData.matchId.count().castTo<Int>(IntegerColumnType()),
                 Sum(
-                    case().When(MatchData.match_result.eq("W"), intLiteral(1)).Else(intLiteral(0)),
+                    case().When(MatchData.matchResult.eq("W"), intLiteral(1)).Else(intLiteral(0)),
                     FloatColumnType()
                 ).div(MatchData.matchId.count().castTo(FloatColumnType())).castTo<Float>(FloatColumnType()),
             ).select { MatchData.mapName.like("%$mapName%") }
@@ -129,7 +143,7 @@ class StatisticsService {
                         it[MatchData.rating.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
                         it[MatchData.matchId.count().castTo(IntegerColumnType())] ?: 0,
                         it[Sum(
-                            case().When(MatchData.match_result.eq("W"), intLiteral(1)).Else(intLiteral(0)),
+                            case().When(MatchData.matchResult.eq("W"), intLiteral(1)).Else(intLiteral(0)),
                             FloatColumnType()
                         ).div(MatchData.matchId.count().castTo(FloatColumnType())).castTo(FloatColumnType())]
                             ?: Float.MIN_VALUE
@@ -157,7 +171,7 @@ class StatisticsService {
                 MatchData.rws.avg().castTo<Float>(FloatColumnType()),
                 MatchData.matchId.count().castTo<Int>(IntegerColumnType()),
                 Sum(
-                    case().When(MatchData.match_result.eq("W"), intLiteral(1)).Else(intLiteral(0)),
+                    case().When(MatchData.matchResult.eq("W"), intLiteral(1)).Else(intLiteral(0)),
                     FloatColumnType()
                 ).div(MatchData.matchId.count().castTo(FloatColumnType())).castTo<Float>(FloatColumnType()),
             ).select {
@@ -188,7 +202,7 @@ class StatisticsService {
                         it[MatchData.rating.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
                         it[MatchData.matchId.count().castTo(IntegerColumnType())] ?: 0,
                         it[Sum(
-                            case().When(MatchData.match_result.eq("W"), intLiteral(1)).Else(intLiteral(0)),
+                            case().When(MatchData.matchResult.eq("W"), intLiteral(1)).Else(intLiteral(0)),
                             FloatColumnType()
                         ).div(MatchData.matchId.count().castTo(FloatColumnType())).castTo(FloatColumnType())]
                             ?: Float.MIN_VALUE
@@ -216,7 +230,7 @@ class StatisticsService {
                 MatchData.rws.avg().castTo<Float>(FloatColumnType()),
                 MatchData.matchId.count().castTo<Int>(IntegerColumnType()),
                 Sum(
-                    case().When(MatchData.match_result.eq("W"), intLiteral(1)).Else(intLiteral(0)),
+                    case().When(MatchData.matchResult.eq("W"), intLiteral(1)).Else(intLiteral(0)),
                     FloatColumnType()
                 ).div(MatchData.matchId.count().castTo(FloatColumnType())).castTo<Float>(FloatColumnType()),
             ).select {
@@ -240,7 +254,7 @@ class StatisticsService {
                         it[MatchData.rating.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
                         it[MatchData.matchId.count().castTo(IntegerColumnType())] ?: 0,
                         it[Sum(
-                            case().When(MatchData.match_result.eq("W"), intLiteral(1)).Else(intLiteral(0)),
+                            case().When(MatchData.matchResult.eq("W"), intLiteral(1)).Else(intLiteral(0)),
                             FloatColumnType()
                         ).div(MatchData.matchId.count().castTo(FloatColumnType())).castTo(FloatColumnType())]
                             ?: Float.MIN_VALUE,
@@ -265,7 +279,7 @@ class StatisticsService {
                 MatchData.rws.avg().castTo<Float>(FloatColumnType()),
                 MatchData.matchId.count().castTo<Int>(IntegerColumnType()),
                 Sum(
-                    case().When(MatchData.match_result.eq("W"), intLiteral(1)).Else(intLiteral(0)),
+                    case().When(MatchData.matchResult.eq("W"), intLiteral(1)).Else(intLiteral(0)),
                     FloatColumnType()
                 ).div(MatchData.matchId.count().castTo(FloatColumnType())).castTo<Float>(FloatColumnType()),
             ).select { MatchData.steamId.eq(steamId).and(MatchData.mapName.notLike(" ")) }
@@ -290,7 +304,7 @@ class StatisticsService {
                         it[MatchData.rating.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
                         it[MatchData.matchId.count().castTo(IntegerColumnType())] ?: 0,
                         it[Sum(
-                            case().When(MatchData.match_result.eq("W"), intLiteral(1)).Else(intLiteral(0)),
+                            case().When(MatchData.matchResult.eq("W"), intLiteral(1)).Else(intLiteral(0)),
                             FloatColumnType()
                         ).div(MatchData.matchId.count().castTo(FloatColumnType())).castTo(FloatColumnType())]
                             ?: Float.MIN_VALUE
@@ -319,7 +333,7 @@ class StatisticsService {
                 MatchData.rws.avg().castTo<Float>(FloatColumnType()),
                 MatchData.matchId.count().castTo<Int>(IntegerColumnType()),
                 Sum(
-                    case().When(MatchData.match_result.eq("W"), intLiteral(1)).Else(intLiteral(0)),
+                    case().When(MatchData.matchResult.eq("W"), intLiteral(1)).Else(intLiteral(0)),
                     FloatColumnType()
                 ).div(MatchData.matchId.count().castTo(FloatColumnType())).castTo<Float>(FloatColumnType()),
             ).select {
@@ -347,7 +361,7 @@ class StatisticsService {
                         it[MatchData.rating.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
                         it[MatchData.matchId.count().castTo(IntegerColumnType())] ?: 0,
                         it[Sum(
-                            case().When(MatchData.match_result.eq("W"), intLiteral(1)).Else(intLiteral(0)),
+                            case().When(MatchData.matchResult.eq("W"), intLiteral(1)).Else(intLiteral(0)),
                             FloatColumnType()
                         ).div(MatchData.matchId.count().castTo(FloatColumnType())).castTo(FloatColumnType())]
                             ?: Float.MIN_VALUE
