@@ -17,7 +17,7 @@ object MatchData: Table() {
     val rws: Column<Float> = float("rws")
     val adr: Column<Float> = float("adr")
     val rating: Column<Float> = float("rating")
-    val match_result: Column<String> = text("match_result")
+    val matchResult: Column<String> = text("match_result")
 }
 
 data class Stats(

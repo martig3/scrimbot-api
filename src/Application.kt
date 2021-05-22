@@ -9,6 +9,7 @@ import io.ktor.client.*
 import io.ktor.client.engine.apache.*
 import io.ktor.client.features.*
 import io.ktor.client.features.json.*
+import io.ktor.client.features.logging.*
 import io.ktor.client.request.*
 import io.ktor.features.*
 import io.ktor.http.*
@@ -36,7 +37,8 @@ fun Application.module() {
     install(CORS) {
         method(HttpMethod.Post)
         method(HttpMethod.Get)
-//        host("dathost.net", listOf("https"), emptyList())
+        host("dathost.net", listOf("https"), emptyList())
+        host(System.getenv("stats_host_url") ?: "127.0.0.1", listOf("https"), emptyList())
         anyHost()
     }
 
@@ -65,6 +67,10 @@ fun Application.module() {
     val client = HttpClient(Apache) {
         engine {
             followRedirects = true
+        }
+        install(Logging) {
+            logger = Logger.DEFAULT
+            level = LogLevel.BODY
         }
         install(JsonFeature) {
             serializer = GsonSerializer()
