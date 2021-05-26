@@ -122,10 +122,11 @@ class StatisticsService {
                     FloatColumnType()
                 ).div(MatchData.matchId.count().castTo(FloatColumnType())).castTo<Float>(FloatColumnType()),
             ).select { MatchData.mapName.like("%$mapName%") }
-                .having { MatchData.kills.sum().greaterEq(100).and(MatchData.adr.sum().greater(Float.MIN_VALUE)) }
+                .having { MatchData.matchId.count().greaterEq(10) }
                 .groupBy(MatchData.steamId)
                 .orderBy(
-                    MatchData.adr.avg().castTo<Float>(FloatColumnType()) to SortOrder.DESC
+                    MatchData.kills.sum().castTo<Float>(FloatColumnType())
+                        .div(MatchData.deaths.sum().castTo(FloatColumnType())) to SortOrder.DESC
                 )
                 .limit(10)
                 .map {
