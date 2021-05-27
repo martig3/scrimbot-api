@@ -2,6 +2,8 @@ package com.martige
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.martige.model.Stats
+import com.martige.service.GameServerService
+import com.martige.service.MatchEndService
 import com.martige.service.StatisticsService
 import com.martige.service.UploadService
 import io.ktor.application.*
@@ -91,14 +93,12 @@ fun Application.module() {
         route("/api") {
             post("/match-end") {
                 val match = call.receive<Match>()
+                val delay: String = call.parameters["delay"].toString()
+                val upload: String = call.parameters["upload"].toString()
                 GlobalScope.launch {
-                    val serverListUrl = "https://dathost.net/api/0.1/game-servers"
-                    val serverList: List<DathostServerInfo> = client.get(serverListUrl)
-                    val map = serverList
-                        .filter { it.id == match.game_server_id }
-                        .map { it.csgo_settings?.mapgroup_start_map }
-                        .firstOrNull() ?: "Unknown Map"
-                    UploadService().uploadDemo(match.id, match.game_server_id, map, jda)
+                    val map = GameServerService().getCurrentMap(client, match.game_server_id)
+                    val shareLink = UploadService().uploadDemo(match.id, match.game_server_id, map)
+                    MatchEndService().sendEOMMessage(match, jda, map, shareLink)
                 }
                 StatisticsService().uploadStatistics(match, match.game_server_id, client)
                 call.respond(HttpStatusCode.OK)
