@@ -26,7 +26,6 @@ class MatchEndService {
             ?.filter { match.team2_steam_ids.contains(it.steam_id) }
             ?.map { getPlayer(it, steamNames, roundsPlayed) }
             ?.sortedByDescending { it.kills }
-        val channel = jda.getTextChannelById(discordTextChannelId)
         val stringBuilder = StringBuilder()
         stringBuilder.appendLine("**$teamOneScore - $teamTwoScore**   `$map`")
         stringBuilder.appendLine("```md")
@@ -42,7 +41,8 @@ class MatchEndService {
             stringBuilder.appendLine(formatRow(i + steamNames.size / 2, p))
         }
         stringBuilder.appendLine("```")
-        stringBuilder.append("Download demo: $shareLink")
+        stringBuilder.appendLine("Download demo: $shareLink")
+        val channel = jda.getTextChannelById(discordTextChannelId)
         channel?.sendMessage(stringBuilder.toString())?.queue()
     }
 
