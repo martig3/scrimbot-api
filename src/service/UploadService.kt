@@ -37,12 +37,10 @@ class UploadService {
             .build()
     }
 
-    suspend fun uploadDemo(filename: String, gameServerId: String, map: String): String? {
+    fun uploadDemo(filename: String, gameServerId: String, map: String): String {
         val demoFileUrl = "https://dathost.net/api/0.1/game-servers/$gameServerId/files/$filename.dem"
         val uploadPath =
             "/${Year.now()}-${MonthDay.now().month.value}-${MonthDay.now().dayOfMonth}_pug_${map}_$filename.dem"
-        log.info("Waiting for GOTV to finish...")
-        delay(140000)
         log.info("Uploading $filename.dem...")
         dropboxClient = DbxClientV2(config, dropboxToken)
         getGameServerFile(demoFileUrl).use { response ->
@@ -52,7 +50,7 @@ class UploadService {
                 log.info("Uploaded $uploadPath successfully")
             }
         }
-        return dropboxClient.sharing().createSharedLinkWithSettings(uploadPath).url
+        return dropboxClient.sharing().createSharedLinkWithSettings(uploadPath).url!!
 
     }
 

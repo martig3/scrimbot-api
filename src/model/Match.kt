@@ -12,7 +12,7 @@ data class Match(
     val playwin_result: PlaywinResult?,
     val playwin_result_webhook_url: String?,
     val round_end_webhook_url: String?,
-    val rounds_played: Int?,
+    val rounds_played: Int,
     val spectator_steam_ids: List<String>?,
     val team1_stats: Team1Stats,
     val team1_steam_ids: List<String>,
