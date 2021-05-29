@@ -22,10 +22,11 @@ class MatchEndService {
                 ?.filter { match.team1_steam_ids.contains(it.steam_id) }
                 ?.map { getPlayer(it, steamNames, roundsPlayed) }
                 ?.sortedByDescending { it.kills }
-        val teamTwoRows = match.player_stats
-            ?.filter { match.team2_steam_ids.contains(it.steam_id) }
-            ?.map { getPlayer(it, steamNames, roundsPlayed) }
-            ?.sortedByDescending { it.kills }
+        val teamTwoRows =
+            match.player_stats
+                ?.filter { match.team2_steam_ids.contains(it.steam_id) }
+                ?.map { getPlayer(it, steamNames, roundsPlayed) }
+                ?.sortedByDescending { it.kills }
         val stringBuilder = StringBuilder()
         stringBuilder.appendLine("**$teamOneScore - $teamTwoScore**   `$map`")
         stringBuilder.appendLine("```md")
@@ -38,7 +39,7 @@ class MatchEndService {
         stringBuilder.appendLine("")
         stringBuilder.appendLine("Team B")
         teamTwoRows?.forEachIndexed { i, p ->
-            stringBuilder.appendLine(formatRow(i + steamNames.size / 2, p))
+            stringBuilder.appendLine(formatRow(i, p))
         }
         stringBuilder.appendLine("```")
         stringBuilder.appendLine("Download demo: $shareLink")
