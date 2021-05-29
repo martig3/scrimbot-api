@@ -2,6 +2,8 @@ package com.martige
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.martige.model.Stats
+import com.martige.service.GameServerService
+import com.martige.service.MatchEndService
 import com.martige.service.StatisticsService
 import com.martige.service.UploadService
 import io.ktor.application.*
@@ -20,6 +22,7 @@ import io.ktor.routing.*
 import io.ktor.server.netty.*
 import io.ktor.util.*
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import model.DathostServerInfo
 import model.Match
@@ -34,10 +37,11 @@ fun main(args: Array<String>): Unit = EngineMain.main(args)
 @KtorExperimentalAPI
 @Suppress("unused") // Referenced in application.conf
 fun Application.module() {
-    var statsHostUrl = "127.0.0.1"
-    try {
-        statsHostUrl = System.getenv("stats_host_url")
-    } catch (e: Exception) { }
+    val statsHostUrl = try {
+        System.getenv("stats_host_url")
+    } catch (e: Exception) {
+        "127.0.0.1"
+    }
     install(CORS) {
         method(HttpMethod.Post)
         method(HttpMethod.Get)
@@ -68,13 +72,19 @@ fun Application.module() {
         .disableCache(CacheFlag.VOICE_STATE)
         .disableCache(CacheFlag.MEMBER_OVERRIDES)
         .build()
+    val loggingLevel = try {
+        val logEnv = System.getenv("API_LOGGING_LEVEL")
+        LogLevel.valueOf(logEnv)
+    } catch (e: Exception) {
+        LogLevel.INFO
+    }
     val client = HttpClient(Apache) {
         engine {
             followRedirects = true
         }
         install(Logging) {
             logger = Logger.DEFAULT
-            level = LogLevel.BODY
+            level = loggingLevel
         }
         install(JsonFeature) {
             serializer = GsonSerializer()
@@ -91,14 +101,21 @@ fun Application.module() {
         route("/api") {
             post("/match-end") {
                 val match = call.receive<Match>()
+                val delayParam: String? = call.parameters["delay"]
+                val uploadParam: String? = call.parameters["upload"]
+                val delay = if (delayParam?.toBooleanStrictOrNull() == null) true else delayParam.toBoolean()
+                val upload = if (uploadParam?.toBooleanStrictOrNull() == null) true else uploadParam.toBoolean()
                 GlobalScope.launch {
-                    val serverListUrl = "https://dathost.net/api/0.1/game-servers"
-                    val serverList: List<DathostServerInfo> = client.get(serverListUrl)
-                    val map = serverList
-                        .filter { it.id == match.game_server_id }
-                        .map { it.csgo_settings?.mapgroup_start_map }
-                        .firstOrNull() ?: "Unknown Map"
-                    UploadService().uploadDemo(match.id, match.game_server_id, map, jda)
+                    val map = GameServerService().getCurrentMap(client, match.game_server_id)
+                    if (delay) {
+                        log.info("Waiting for GOTV to finish...")
+                        delay(140000)
+                    }
+                    var shareLink = "No file uploaded"
+                    if (upload) {
+                        shareLink = UploadService().uploadDemo(match.id, match.game_server_id, map)
+                    }
+                    MatchEndService().sendEOMMessage(match, jda, map, shareLink, client)
                 }
                 StatisticsService().uploadStatistics(match, match.game_server_id, client)
                 call.respond(HttpStatusCode.OK)

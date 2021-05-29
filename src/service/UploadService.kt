@@ -23,7 +23,6 @@ class UploadService {
         private val log: Logger = LoggerFactory.getLogger(UploadService::class.java)
         private var dropboxToken = System.getenv("dropbox_token")
         private var dropboxAppName = System.getenv("dropbox_app_name")
-        private var discordTextChannelId: Long = System.getenv("discord_textchannel_id").toLong()
         private var config: DbxRequestConfig = DbxRequestConfig.newBuilder("dropbox/$dropboxAppName").build()
         val auth64String = "Basic " + Base64.getEncoder()
             .encodeToString(
@@ -38,12 +37,10 @@ class UploadService {
             .build()
     }
 
-    suspend fun uploadDemo(filename: String, gameServerId: String, map: String, jda: JDA) {
+    fun uploadDemo(filename: String, gameServerId: String, map: String): String {
         val demoFileUrl = "https://dathost.net/api/0.1/game-servers/$gameServerId/files/$filename.dem"
         val uploadPath =
             "/${Year.now()}-${MonthDay.now().month.value}-${MonthDay.now().dayOfMonth}_pug_${map}_$filename.dem"
-        log.info("Waiting for GOTV to finish...")
-        delay(140000)
         log.info("Uploading $filename.dem...")
         dropboxClient = DbxClientV2(config, dropboxToken)
         getGameServerFile(demoFileUrl).use { response ->
@@ -53,9 +50,8 @@ class UploadService {
                 log.info("Uploaded $uploadPath successfully")
             }
         }
-        val shareLink = dropboxClient.sharing().createSharedLinkWithSettings(uploadPath)
-        val channel = jda.getTextChannelById(discordTextChannelId)
-        channel?.sendMessage("New `.dem` replay files are available: \n$map - ${shareLink.url}")?.queue()
+        return dropboxClient.sharing().createSharedLinkWithSettings(uploadPath).url!!
+
     }
 
     private fun getGameServerFile(demoFileUrl: String): Response {
