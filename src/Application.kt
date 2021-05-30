@@ -37,17 +37,12 @@ fun main(args: Array<String>): Unit = EngineMain.main(args)
 @KtorExperimentalAPI
 @Suppress("unused") // Referenced in application.conf
 fun Application.module() {
-    val statsHostUrl = try {
-        System.getenv("stats_host_url")
-    } catch (e: Exception) {
-        "127.0.0.1"
-    }
+    val statsHostUrl = System.getenv("stats_host_url") ?: "127.0.0.1"
     install(CORS) {
         method(HttpMethod.Post)
         method(HttpMethod.Get)
-        host("dathost.net", listOf("https"), emptyList())
-        host(statsHostUrl, listOf("https"), emptyList())
-        anyHost()
+        host("dathost.net")
+        host(statsHostUrl)
     }
 
     install(ContentNegotiation) {
