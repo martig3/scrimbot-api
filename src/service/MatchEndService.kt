@@ -49,7 +49,7 @@ class MatchEndService {
 
     private fun formatRow(i: Int, p: ScoreboardRow): String {
         val indexString = i.toString().padStart(2, ' ')
-        val personaName = p.name?.padEnd(20, ' ')
+        val personaName = p.name?.replace("_", " ")?.padEnd(20, ' ')
         return "$indexString. $personaName${p.kills.toString().padEnd(3, ' ')}     " +
                 p.assists.toString().padEnd(3, ' ') +
                 "       ${p.deaths.toString().padEnd(3, ' ')}      ${String.format("%.2f", p.kpr)}"
