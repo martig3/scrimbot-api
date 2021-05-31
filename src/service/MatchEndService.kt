@@ -39,7 +39,7 @@ class MatchEndService {
         stringBuilder.appendLine("")
         stringBuilder.appendLine("Team B")
         teamTwoRows?.forEachIndexed { i, p ->
-            stringBuilder.appendLine(formatRow(i, p))
+            stringBuilder.appendLine(formatRow(i + 1, p))
         }
         stringBuilder.appendLine("```")
         stringBuilder.appendLine("Download demo: $shareLink")
