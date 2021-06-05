@@ -7,6 +7,7 @@ import com.martige.service.MatchEndService
 import com.martige.service.StatisticsService
 import com.martige.service.UploadService
 import io.ktor.application.*
+import io.ktor.auth.*
 import io.ktor.client.*
 import io.ktor.client.engine.apache.*
 import io.ktor.client.features.*
@@ -50,6 +51,22 @@ fun Application.module() {
             enable(SerializationFeature.INDENT_OUTPUT)
         }
     }
+
+    val authUser = System.getenv("stats_user").trim()
+    val authPass = System.getenv("stats_password").trim()
+    if (authUser == "" || authPass == "") log.error("'stats_user' and/or 'stats_password' env variables are not set!")
+    install(Authentication) {
+        basic {
+            realm = "Access to the '/api' path"
+            validate { credentials ->
+                if (credentials.name == authUser && credentials.password == authPass) {
+                    UserIdPrincipal(credentials.name)
+                } else {
+                    null
+                }
+            }
+        }
+    }
     val auth64String = "Basic " + Base64.getEncoder()
         .encodeToString(
             "${System.getenv("dathost_username")}:${System.getenv("dathost_password")}"
@@ -90,68 +107,70 @@ fun Application.module() {
         }
     }
 
+
     DatabaseFactory.init()
 
     routing {
         route("/api") {
-            post("/match-end") {
-                val match = call.receive<Match>()
-                val delayParam: String? = call.parameters["delay"]
-                val uploadParam: String? = call.parameters["upload"]
-                val delay = if (delayParam?.toBooleanStrictOrNull() == null) true else delayParam.toBoolean()
-                val upload = if (uploadParam?.toBooleanStrictOrNull() == null) true else uploadParam.toBoolean()
-                GlobalScope.launch {
-                    val map = GameServerService().getCurrentMap(client, match.game_server_id)
-                    if (delay) {
-                        log.info("Waiting for GOTV to finish...")
-                        delay(140000)
+            authenticate {
+                post("/match-end") {
+                    val match = call.receive<Match>()
+                    val delayParam: String? = call.parameters["delay"]
+                    val uploadParam: String? = call.parameters["upload"]
+                    val delay = if (delayParam?.toBooleanStrictOrNull() == null) true else delayParam.toBoolean()
+                    val upload = if (uploadParam?.toBooleanStrictOrNull() == null) true else uploadParam.toBoolean()
+                    GlobalScope.launch {
+                        val map = GameServerService().getCurrentMap(client, match.game_server_id)
+                        if (delay) {
+                            log.info("Waiting for GOTV to finish...")
+                            delay(140000)
+                        }
+                        var shareLink = "No file uploaded"
+                        if (upload) {
+                            shareLink = UploadService().uploadDemo(match.id, match.game_server_id, map)
+                        }
+                        MatchEndService().sendEOMMessage(match, jda, map, shareLink, client)
                     }
-                    var shareLink = "No file uploaded"
-                    if (upload) {
-                        shareLink = UploadService().uploadDemo(match.id, match.game_server_id, map)
+                    StatisticsService().uploadStatistics(match, match.game_server_id, client)
+                    call.respond(HttpStatusCode.OK)
+                }
+                get("/stats") {
+                    val steamId: String = call.parameters["steamid"].toString()
+                    val length: Int? = call.parameters["length"]?.toIntOrNull()
+                    val mapName: String = call.parameters["map"] ?: ""
+                    val lengthParamExists: Boolean = call.parameters["length"]?.toIntOrNull() ?: -1 > 0
+                    val results: List<Stats>? = when (call.parameters["option"].toString() to lengthParamExists) {
+                        "top10" to false -> StatisticsService().getTopTenPlayers(mapName)
+                        "top10" to true -> StatisticsService().getTopTenPlayersMonthRange(length, mapName)
+                        "range" to true -> StatisticsService().getMonthRangeStats(steamId, length, mapName)
+                        "maps" to false -> StatisticsService().getTopMaps(steamId)
+                        "maps" to true -> StatisticsService().getTopMapsRange(steamId, length)
+                        else -> StatisticsService().getStatistics(steamId, mapName)
                     }
-                    MatchEndService().sendEOMMessage(match, jda, map, shareLink, client)
-                }
-                StatisticsService().uploadStatistics(match, match.game_server_id, client)
-                call.respond(HttpStatusCode.OK)
-            }
-            get("/stats") {
-                val steamId: String = call.parameters["steamid"].toString()
-                val length: Int? = call.parameters["length"]?.toIntOrNull()
-                val mapName: String = call.parameters["map"] ?: ""
-                val lengthParamExists: Boolean = call.parameters["length"]?.toIntOrNull() ?: -1 > 0
-                val results: List<Stats>? = when (call.parameters["option"].toString() to lengthParamExists) {
-                    "top10" to false -> StatisticsService().getTopTenPlayers(mapName)
-                    "top10" to true -> StatisticsService().getTopTenPlayersMonthRange(length, mapName)
-                    "range" to true -> StatisticsService().getMonthRangeStats(steamId, length, mapName)
-                    "maps" to false -> StatisticsService().getTopMaps(steamId)
-                    "maps" to true -> StatisticsService().getTopMapsRange(steamId, length)
-                    else -> StatisticsService().getStatistics(steamId, mapName)
-                }
-                results?.let {
-                    call.respond(it)
-                    return@get
-                }
-                call.respond(HttpStatusCode.BadRequest)
-            }
-            route("/server") {
-                get("/online") {
-                    val serverId = call.parameters["serverid"]
-                    val serverListUrl = "https://dathost.net/api/0.1/game-servers"
-                    val serverList: List<DathostServerInfo> = client.get(serverListUrl)
-                    val serverOn = serverList
-                        .filter { it.id == serverId }
-                        .map { it.on }
-                        .firstOrNull()
-                    serverOn?.let {
+                    results?.let {
                         call.respond(it)
                         return@get
                     }
-                    call.respond(HttpStatusCode.NoContent)
+                    call.respond(HttpStatusCode.BadRequest)
+                }
+                route("/server") {
+                    get("/online") {
+                        val serverId = call.parameters["serverid"]
+                        val serverListUrl = "https://dathost.net/api/0.1/game-servers"
+                        val serverList: List<DathostServerInfo> = client.get(serverListUrl)
+                        val serverOn = serverList
+                            .filter { it.id == serverId }
+                            .map { it.on }
+                            .firstOrNull()
+                        serverOn?.let {
+                            call.respond(it)
+                            return@get
+                        }
+                        call.respond(HttpStatusCode.NoContent)
+                    }
                 }
             }
         }
-
     }
 }
 
