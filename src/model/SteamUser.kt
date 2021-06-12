@@ -1,3 +1,5 @@
+package model
+
 data class SteamUser(
     val avatar: String,
     val avatarfull: String,

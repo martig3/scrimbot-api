@@ -1,4 +1,4 @@
-package com.martige.model
+package model
 
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Table
@@ -17,6 +17,7 @@ object MatchData: Table() {
     val rws: Column<Float> = float("rws")
     val adr: Column<Float> = float("adr")
     val rating: Column<Float> = float("rating")
+    val effFlashes: Column<Int> = integer("eff_flashes")
     val matchResult: Column<String> = text("match_result")
 }
 

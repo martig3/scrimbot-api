@@ -1,11 +1,10 @@
 package com.martige
 
 import com.fasterxml.jackson.databind.SerializationFeature
-import com.martige.model.Stats
-import com.martige.service.GameServerService
-import com.martige.service.MatchEndService
-import com.martige.service.StatisticsService
-import com.martige.service.UploadService
+import model.DathostServerInfo
+import model.DatHostMatch
+import model.Stats
+import com.martige.service.*
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.client.*
@@ -22,11 +21,8 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.netty.*
 import io.ktor.util.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import model.DathostServerInfo
-import model.Match
+import kotlinx.coroutines.*
+import kotlinx.coroutines.time.withTimeoutOrNull
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.MemberCachePolicy
@@ -67,11 +63,6 @@ fun Application.module() {
             }
         }
     }
-    val auth64String = "Basic " + Base64.getEncoder()
-        .encodeToString(
-            "${System.getenv("dathost_username")}:${System.getenv("dathost_password")}"
-                .toByteArray()
-        )
     val jda = JDABuilder
         .create(
             System.getenv("discord_bot_token"),
@@ -93,6 +84,7 @@ fun Application.module() {
     val client = HttpClient(Apache) {
         engine {
             followRedirects = true
+            socketTimeout = 60000
         }
         install(Logging) {
             logger = Logger.DEFAULT
@@ -102,7 +94,6 @@ fun Application.module() {
             serializer = GsonSerializer()
         }
         defaultRequest {
-            header("Authorization", auth64String)
             accept(ContentType.Application.Json)
         }
     }
@@ -114,24 +105,48 @@ fun Application.module() {
         route("/api") {
             authenticate {
                 post("/match-end") {
-                    val match = call.receive<Match>()
+                    val match = call.receive<DatHostMatch>()
+                    if (match.player_stats == null || match.player_stats.isEmpty()) {
+                        call.respond(HttpStatusCode.BadRequest)
+                        return@post
+                    }
                     val delayParam: String? = call.parameters["delay"]
                     val uploadParam: String? = call.parameters["upload"]
                     val delay = if (delayParam?.toBooleanStrictOrNull() == null) true else delayParam.toBoolean()
                     val upload = if (uploadParam?.toBooleanStrictOrNull() == null) true else uploadParam.toBoolean()
-                    GlobalScope.launch {
-                        val map = GameServerService().getCurrentMap(client, match.game_server_id)
+                    val map = GameServerService().getCurrentMap(client, match.game_server_id)
+                    val shareLink = GlobalScope.async {
                         if (delay) {
                             log.info("Waiting for GOTV to finish...")
                             delay(140000)
                         }
-                        var shareLink = "No file uploaded"
+                        var link = "No file uploaded"
                         if (upload) {
-                            shareLink = UploadService().uploadDemo(match.id, match.game_server_id, map)
+                            link = UploadService().uploadDemo(match.id, match.game_server_id, map)
                         }
-                        MatchEndService().sendEOMMessage(match, jda, map, shareLink, client)
+                        return@async link
                     }
-                    StatisticsService().uploadStatistics(match, match.game_server_id, client)
+                    val demoStats = GlobalScope.async {
+                        log.info("Retrieving detailed stats from demo-stats-service...")
+                        return@async DemoStatsService().getDemoStats(client, match.game_server_id, match.id)
+                    }
+                    val steamNames = GlobalScope.async {
+                        log.info("Retrieving persona names from steam api...")
+                        return@async SteamWebService().getSteamNames(
+                            match.team1_steam_ids + match.team2_steam_ids, client
+                        )
+                    }
+
+                    val scoreboard = GlobalScope.async {
+                        return@async StatisticsService().createScoreboard(
+                            match.player_stats,
+                            demoStats.await(),
+                            steamNames.await()
+                        )
+                    }
+                    val scoreboardRows = scoreboard.await()
+                    MatchEndService().sendEOMMessage(match, scoreboardRows, jda, map, shareLink.await())
+                    StatisticsService().uploadStatistics(match, scoreboardRows, match.game_server_id, client)
                     call.respond(HttpStatusCode.OK)
                 }
                 get("/stats") {

@@ -37,4 +37,20 @@ data class Player(
     val tradefirstdeaths: Int,
     val tradefirstkills: Int,
     val tradekills: Int,
+    val weaponStats: WeaponStats?,
+    val playerDamages: PlayerDamages?,
+
+)
+
+data class WeaponStats(
+    val kills: Map<String, Int>?,
+    val headshots: Map<String, Int>?,
+    val accuracy: Map<String, Int>?,
+    val damage: Map<String, Int>?,
+    val shots: Map<String, Int>?,
+    val hits: Map<String, Int>?,
+)
+
+data class PlayerDamages(
+    val damages: Map<String, Int>?
 )
