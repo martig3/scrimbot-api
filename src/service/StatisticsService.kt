@@ -1,29 +1,40 @@
 package com.martige.service
 
-import com.martige.model.MatchData
-import com.martige.model.Stats
 import io.ktor.client.*
 import io.ktor.client.request.*
-import model.DathostServerInfo
-import model.Match
+import model.*
+import model.demostatsservice.Player
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.case
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.div
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
+import java.util.*
+import kotlin.collections.HashMap
 
 class StatisticsService {
-
-    suspend fun uploadStatistics(match: Match, gameServerId: String, client: HttpClient) {
+    private val dathostAuth = "Basic " + Base64.getEncoder()
+        .encodeToString(
+            "${System.getenv("DATHOST_USERNAME")}:${System.getenv("DATHOST_PASSWORD")}"
+                .toByteArray()
+        )
+    suspend fun uploadStatistics(
+        match: DatHostMatch,
+        playerStat: List<ScoreboardRow>,
+        gameServerId: String,
+        client: HttpClient
+    ) {
         val matchId = match.id
         val serverListUrl = "https://dathost.net/api/0.1/game-servers"
-        val serverList: List<DathostServerInfo> = client.get(serverListUrl)
+        val serverList: List<DathostServerInfo> = client.get(serverListUrl) {
+            header("Authorization", dathostAuth)
+        }
         val map = serverList
             .filter { it.id == gameServerId }
             .map { it.csgo_settings?.mapgroup_start_map }
             .firstOrNull() ?: "Unknown Map"
-        match.player_stats?.forEach {
+        match.player_stats?.forEach { it ->
             if (!it.steam_id.trim().startsWith("STEAM", true)) {
                 return@forEach
             }
@@ -44,6 +55,7 @@ class StatisticsService {
                 playerTeamScore == enemyTeamScore -> "T"
                 else -> "L"
             }
+            val statsPlayer = playerStat.first { p -> p.steamId == steamIdUpdated }
             transaction {
                 MatchData.insert { data ->
                     data[steamId] = steamIdUpdated
@@ -53,11 +65,38 @@ class StatisticsService {
                     data[MatchData.assists] = assists
                     data[createTime] = DateTime.now()
                     data[mapName] = map
+                    data[adr] = statsPlayer.adr.toFloat()
+                    data[hs] = statsPlayer.hsPercent.toFloat()
+                    data[effFlashes] = statsPlayer.effFlashes
                     data[MatchData.matchResult] = matchResult
                 }
             }
         }
     }
+
+    fun createScoreboard(
+        matchPlayers: List<PlayerStat>,
+        playerStat: List<Player>,
+        steamIds: HashMap<String, String>
+    ): List<ScoreboardRow> {
+        val matchHash = HashMap<String, PlayerStat>()
+        val statHash = HashMap<String, Player>()
+        matchPlayers.forEach { matchHash[it.steam_id] = it }
+        playerStat.forEach { statHash[it.steamid] = it }
+        return matchPlayers.map {
+            ScoreboardRow(
+                it.steam_id,
+                steamIds[it.steam_id].orEmpty(),
+                matchHash[it.steam_id]?.kills ?: 0,
+                matchHash[it.steam_id]?.assists ?: 0,
+                matchHash[it.steam_id]?.deaths ?: 0,
+                statHash[it.steam_id]?.adr ?: 0.0,
+                statHash[it.steam_id]?.hsprecent ?: 0.0,
+                statHash[it.steam_id]?.effFlashes ?: 0
+            )
+        }.toList()
+    }
+
 
     fun getStatistics(steamId: String, mapName: String): List<Stats> {
         return transaction {

@@ -2,11 +2,6 @@ package com.martige.service
 
 import com.dropbox.core.DbxRequestConfig
 import com.dropbox.core.v2.DbxClientV2
-import io.ktor.client.*
-import io.ktor.client.request.*
-import kotlinx.coroutines.delay
-import model.DathostServerInfo
-import net.dv8tion.jda.api.JDA
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -21,12 +16,12 @@ import java.util.concurrent.TimeUnit
 class UploadService {
     companion object {
         private val log: Logger = LoggerFactory.getLogger(UploadService::class.java)
-        private var dropboxToken = System.getenv("dropbox_token")
-        private var dropboxAppName = System.getenv("dropbox_app_name")
+        private var dropboxToken = System.getenv("DROPBOX_TOKEN")
+        private var dropboxAppName = System.getenv("DROPBOX_APP_NAME")
         private var config: DbxRequestConfig = DbxRequestConfig.newBuilder("dropbox/$dropboxAppName").build()
         val auth64String = "Basic " + Base64.getEncoder()
             .encodeToString(
-                "${System.getenv("dathost_username")}:${System.getenv("dathost_password")}"
+                "${System.getenv("DATHOST_USERNAME")}:${System.getenv("DATHOST_PASSWORD")}"
                     .toByteArray()
             )
         private lateinit var dropboxClient: DbxClientV2

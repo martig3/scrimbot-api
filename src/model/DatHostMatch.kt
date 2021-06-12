@@ -1,6 +1,6 @@
 package model
 
-data class Match(
+data class DatHostMatch(
     val cancel_reason: String?,
     val connect_time: Int?,
     val enable_playwin: Boolean?,
@@ -21,4 +21,8 @@ data class Match(
     val warmup_time: Int?,
     val wait_for_spectators: Boolean?,
     val enable_knife_round: Boolean?,
+    val enable_pause: String?,
 )
+
+class PlaywinResult ()
+
