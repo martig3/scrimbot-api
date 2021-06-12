@@ -11,7 +11,7 @@ Microservice for processing end of match payloads and statistics queries.
 
 ### End of Match Printout Example
 
-![preview](https://i.imgur.com/fRRp2aB.png)
+![preview](https://i.imgur.com/XuPQt5o.jpg)
 
 ## Currently supported webhooks
 
