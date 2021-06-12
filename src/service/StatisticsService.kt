@@ -66,6 +66,7 @@ class StatisticsService {
                     data[createTime] = DateTime.now()
                     data[mapName] = map
                     data[adr] = statsPlayer.adr.toFloat()
+                    data[hs] = statsPlayer.hsPercent.toFloat()
                     data[effFlashes] = statsPlayer.effFlashes
                     data[MatchData.matchResult] = matchResult
                 }
