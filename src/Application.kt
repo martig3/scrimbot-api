@@ -48,9 +48,9 @@ fun Application.module() {
         }
     }
 
-    val authUser = System.getenv("stats_user").trim()
-    val authPass = System.getenv("stats_password").trim()
-    if (authUser == "" || authPass == "") log.error("'stats_user' and/or 'stats_password' env variables are not set!")
+    val authUser = System.getenv("STATS_USER").trim()
+    val authPass = System.getenv("STATS_PASSWORD").trim()
+    if (authUser == "" || authPass == "") log.error("'STATS_USER' and/or 'STATS_PASSWORD' env variables are not set!")
     install(Authentication) {
         basic {
             realm = "Access to the '/api' path"
@@ -65,7 +65,7 @@ fun Application.module() {
     }
     val jda = JDABuilder
         .create(
-            System.getenv("discord_bot_token"),
+            System.getenv("DISCORD_BOT_TOKEN"),
             EnumSet.noneOf(GatewayIntent::class.java)
         )
         .setMemberCachePolicy(MemberCachePolicy.NONE)

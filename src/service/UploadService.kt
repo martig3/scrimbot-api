@@ -16,12 +16,12 @@ import java.util.concurrent.TimeUnit
 class UploadService {
     companion object {
         private val log: Logger = LoggerFactory.getLogger(UploadService::class.java)
-        private var dropboxToken = System.getenv("dropbox_token")
-        private var dropboxAppName = System.getenv("dropbox_app_name")
+        private var dropboxToken = System.getenv("DROPBOX_TOKEN")
+        private var dropboxAppName = System.getenv("DROPBOX_APP_NAME")
         private var config: DbxRequestConfig = DbxRequestConfig.newBuilder("dropbox/$dropboxAppName").build()
         val auth64String = "Basic " + Base64.getEncoder()
             .encodeToString(
-                "${System.getenv("dathost_username")}:${System.getenv("dathost_password")}"
+                "${System.getenv("DATHOST_USERNAME")}:${System.getenv("DATHOST_PASSWORD")}"
                     .toByteArray()
             )
         private lateinit var dropboxClient: DbxClientV2

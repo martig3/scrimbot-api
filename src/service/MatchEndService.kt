@@ -16,7 +16,7 @@ data class ScoreboardRow(
 )
 
 class MatchEndService {
-    private var discordTextChannelId: Long = System.getenv("discord_textchannel_id").toLong()
+    private var discordTextChannelId: Long = System.getenv("DISCORD_TEXTCHANNEL_ID").toLong()
 
     fun sendEOMMessage(
         match: DatHostMatch,

@@ -10,9 +10,15 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.div
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
+import java.util.*
+import kotlin.collections.HashMap
 
 class StatisticsService {
-
+    private val dathostAuth = "Basic " + Base64.getEncoder()
+        .encodeToString(
+            "${System.getenv("DATHOST_USERNAME")}:${System.getenv("DATHOST_PASSWORD")}"
+                .toByteArray()
+        )
     suspend fun uploadStatistics(
         match: DatHostMatch,
         playerStat: List<ScoreboardRow>,
@@ -21,7 +27,9 @@ class StatisticsService {
     ) {
         val matchId = match.id
         val serverListUrl = "https://dathost.net/api/0.1/game-servers"
-        val serverList: List<DathostServerInfo> = client.get(serverListUrl)
+        val serverList: List<DathostServerInfo> = client.get(serverListUrl) {
+            header("Authorization", dathostAuth)
+        }
         val map = serverList
             .filter { it.id == gameServerId }
             .map { it.csgo_settings?.mapgroup_start_map }
