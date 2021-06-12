@@ -79,7 +79,7 @@ fun Application.module() {
         val logEnv = System.getenv("API_LOGGING_LEVEL")
         LogLevel.valueOf(logEnv)
     } catch (e: Exception) {
-        LogLevel.INFO
+        LogLevel.NONE
     }
     val client = HttpClient(Apache) {
         engine {
