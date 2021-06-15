@@ -164,8 +164,7 @@ class StatisticsService {
                 .having { MatchData.matchId.count().greaterEq(10) }
                 .groupBy(MatchData.steamId)
                 .orderBy(
-                    MatchData.kills.sum().castTo<Float>(FloatColumnType())
-                        .div(MatchData.deaths.sum().castTo(FloatColumnType())) to SortOrder.DESC
+                    MatchData.adr.avg().castTo<Float>(FloatColumnType()) to SortOrder.DESC
                 )
                 .limit(10)
                 .map {
@@ -223,8 +222,7 @@ class StatisticsService {
             }
                 .groupBy(MatchData.steamId)
                 .orderBy(
-                    MatchData.kills.sum().castTo<Float>(FloatColumnType())
-                        .div(MatchData.deaths.sum().castTo(FloatColumnType())) to SortOrder.DESC
+                    MatchData.adr.avg().castTo<Float>(FloatColumnType()) to SortOrder.DESC
                 )
                 .limit(10)
                 .map {
@@ -325,8 +323,7 @@ class StatisticsService {
             ).select { MatchData.steamId.eq(steamId).and(MatchData.mapName.notLike(" ")) }
                 .groupBy(MatchData.steamId, MatchData.mapName)
                 .orderBy(
-                    MatchData.kills.sum().castTo<Float>(FloatColumnType())
-                        .div(MatchData.deaths.sum().castTo(FloatColumnType())) to SortOrder.DESC
+                    MatchData.adr.avg().castTo<Float>(FloatColumnType()) to SortOrder.DESC
                 )
                 .limit(10)
                 .map {
@@ -382,8 +379,7 @@ class StatisticsService {
             }
                 .groupBy(MatchData.steamId, MatchData.mapName)
                 .orderBy(
-                    MatchData.kills.sum().castTo<Float>(FloatColumnType())
-                        .div(MatchData.deaths.sum().castTo(FloatColumnType())) to SortOrder.DESC
+                    MatchData.adr.avg().castTo<Float>(FloatColumnType()) to SortOrder.DESC
                 )
                 .limit(10)
                 .map {
