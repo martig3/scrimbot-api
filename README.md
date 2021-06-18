@@ -1,6 +1,6 @@
 # scrimbot-api
 
-Microservice for processing end of match payloads and statistics queries.
+Microservice for processing CSGO end of match payloads and statistics queries.
 
 ## Features
 
