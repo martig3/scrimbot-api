@@ -33,6 +33,7 @@ data class Stats(
     var rws: Float,
     var adr: Float,
     var rating: Float,
+    var efpr: Float,
     var playCount: Int,
     var winPercentage: Float,
 )
