@@ -6,6 +6,7 @@ data class Player(
     val atag: String,
     val deaths: Int,
     val effFlashes: Int,
+    val efpr: Double,
     val firstdeaths: Int,
     val firstkills: Int,
     val flashDuration: Int,
