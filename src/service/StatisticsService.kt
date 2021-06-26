@@ -11,7 +11,6 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import java.util.*
-import kotlin.collections.HashMap
 
 class StatisticsService {
     private val dathostAuth = "Basic " + Base64.getEncoder()
@@ -19,6 +18,7 @@ class StatisticsService {
             "${System.getenv("DATHOST_USERNAME")}:${System.getenv("DATHOST_PASSWORD")}"
                 .toByteArray()
         )
+
     suspend fun uploadStatistics(
         match: DatHostMatch,
         playerStat: List<ScoreboardRow>,
@@ -65,9 +65,10 @@ class StatisticsService {
                     data[MatchData.assists] = assists
                     data[createTime] = DateTime.now()
                     data[mapName] = map
-                    data[adr] = statsPlayer.adr.toFloat()
-                    data[hs] = statsPlayer.hsPercent.toFloat()
+                    data[adr] = statsPlayer.adr
+                    data[hs] = statsPlayer.hsPercent
                     data[effFlashes] = statsPlayer.effFlashes
+                    data[efpr] = statsPlayer.efpr
                     data[MatchData.matchResult] = matchResult
                 }
             }
@@ -92,7 +93,8 @@ class StatisticsService {
                 matchHash[it.steam_id]?.deaths ?: 0,
                 statHash[it.steam_id]?.adr ?: 0.0,
                 statHash[it.steam_id]?.hsprecent ?: 0.0,
-                statHash[it.steam_id]?.effFlashes ?: 0
+                statHash[it.steam_id]?.effFlashes ?: 0,
+                statHash[it.steam_id]?.efpr ?: 0.0
             )
         }.toList()
     }

@@ -13,6 +13,7 @@ data class ScoreboardRow(
     val adr: Double,
     val hsPercent: Double,
     val effFlashes: Int,
+    val efpr: Double,
 )
 
 class MatchEndService {
@@ -40,8 +41,8 @@ class MatchEndService {
         val stringBuilder = StringBuilder()
         stringBuilder.appendLine("**$teamOneScore - $teamTwoScore**   `$map`")
         stringBuilder.appendLine("```md")
-        stringBuilder.appendLine("    Player              Kills   Assists   Deaths  ADR     HS%     EF   ")
-        stringBuilder.appendLine("-----------------------------------------------------------------------")
+        stringBuilder.appendLine("    Player              K   A   D   ADR     HS%     EF   ")
+        stringBuilder.appendLine("---------------------------------------------------------")
         stringBuilder.appendLine("Team A")
         teamOneRows?.forEachIndexed { i, p ->
             stringBuilder.appendLine(formatRow(i + 1, p))
@@ -60,9 +61,10 @@ class MatchEndService {
     private fun formatRow(i: Int, p: ScoreboardRow): String {
         val indexString = i.toString().padStart(2, ' ')
         val personaName = p.name?.replace("_", " ")?.padEnd(20, ' ')
-        return "$indexString. $personaName${p.kills.toString().padEnd(8, ' ')}" +
-                p.assists.toString().padEnd(10, ' ') +
-                p.deaths.toString().padEnd(8, ' ') +
+        return "$indexString. $personaName" +
+                p.kills.toString().padEnd(4, ' ') +
+                p.assists.toString().padEnd(4, ' ') +
+                p.deaths.toString().padEnd(4, ' ') +
                 String.format("%.2f", p.adr.absoluteValue).padEnd(8, ' ') +
                 String.format("%.2f", p.hsPercent.absoluteValue).padEnd(8, ' ') +
                 p.effFlashes.toString().padEnd(8, ' ')
