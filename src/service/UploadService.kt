@@ -2,15 +2,11 @@ package com.martige.service
 
 import com.dropbox.core.DbxRequestConfig
 import com.dropbox.core.v2.DbxClientV2
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.File
 import java.time.MonthDay
 import java.time.Year
-import java.util.*
-import java.util.concurrent.TimeUnit
 
 
 class UploadService {
@@ -19,17 +15,7 @@ class UploadService {
         private var dropboxToken = System.getenv("DROPBOX_TOKEN")
         private var dropboxAppName = System.getenv("DROPBOX_APP_NAME")
         private var config: DbxRequestConfig = DbxRequestConfig.newBuilder("dropbox/$dropboxAppName").build()
-        val auth64String = "Basic " + Base64.getEncoder()
-            .encodeToString(
-                "${System.getenv("DATHOST_USERNAME")}:${System.getenv("DATHOST_PASSWORD")}"
-                    .toByteArray()
-            )
         private lateinit var dropboxClient: DbxClientV2
-        private val httpClient = OkHttpClient.Builder()
-            .readTimeout(10, TimeUnit.MINUTES)
-            .writeTimeout(10, TimeUnit.MINUTES)
-            .callTimeout(5, TimeUnit.MINUTES)
-            .build()
     }
 
     fun uploadDemo(filename: String, gameServerId: String, map: String): String {
@@ -38,7 +24,7 @@ class UploadService {
             "/${Year.now()}-${MonthDay.now().month.value}-${MonthDay.now().dayOfMonth}_pug_${map}_$filename.dem"
         log.info("Uploading $filename.dem...")
         dropboxClient = DbxClientV2(config, dropboxToken)
-        getGameServerFile(demoFileUrl).use { response ->
+        GameServerService().getGameServerFile(demoFileUrl).use { response ->
             response.body?.byteStream().use { `in` ->
                 dropboxClient.files().uploadBuilder(uploadPath)
                     .uploadAndFinish(`in`)
@@ -46,16 +32,5 @@ class UploadService {
             }
         }
         return dropboxClient.sharing().createSharedLinkWithSettings(uploadPath).url!!
-
     }
-
-    private fun getGameServerFile(demoFileUrl: String): Response {
-        val getFileRequest = Request.Builder()
-            .url(demoFileUrl)
-            .get()
-            .header("Authorization", auth64String)
-            .build()
-        return httpClient.newCall(getFileRequest).execute()
-    }
-
 }
