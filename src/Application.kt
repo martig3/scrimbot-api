@@ -17,7 +17,6 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.netty.*
-import io.ktor.util.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import model.DatHostMatch
@@ -26,7 +25,6 @@ import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.MemberCachePolicy
 import net.dv8tion.jda.api.utils.cache.CacheFlag
-import java.io.File
 import java.util.*
 
 fun main(args: Array<String>): Unit = EngineMain.main(args)
