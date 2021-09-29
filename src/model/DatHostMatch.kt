@@ -22,6 +22,9 @@ data class DatHostMatch(
     val wait_for_spectators: Boolean?,
     val enable_knife_round: Boolean?,
     val enable_pause: String?,
+    val enable_ready: Boolean?,
+    val ready_min_players: Int?,
+    val enable_tech_pause: Boolean?,
 )
 
 class PlaywinResult ()
