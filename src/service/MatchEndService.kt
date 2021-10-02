@@ -38,6 +38,8 @@ class MatchEndService {
                 ?.filter { match.team2_steam_ids.contains(it.steam_id) }
                 ?.map { p -> scoreboard.first { it.steamId == p.steam_id } }
                 ?.sortedByDescending { it.adr }
+        val mvpAdr = scoreboard.maxOf { it.adr }
+        val mvp = scoreboard.first { it.adr == mvpAdr }
         val stringBuilder = StringBuilder()
         stringBuilder.appendLine("**$teamOneScore - $teamTwoScore**   `$map`")
         stringBuilder.appendLine("```md")
@@ -53,6 +55,7 @@ class MatchEndService {
             stringBuilder.appendLine(formatRow(i + 1, p))
         }
         stringBuilder.appendLine("```")
+        stringBuilder.appendLine("Congrats to the MVP `${mvp.name}` with the highest ADR of `${mvp.adr}`!")
         stringBuilder.appendLine("Download demo: $shareLink")
         val channel = jda.getTextChannelById(discordTextChannelId)
         channel?.sendMessage(stringBuilder.toString())?.queue()
