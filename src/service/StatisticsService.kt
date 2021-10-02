@@ -262,7 +262,7 @@ class StatisticsService {
                 )
                 .limit(10)
                 .map {
-                    getStatsFieldMapping(it)
+                    getStatsFieldMapping(it, null)
                 }
         }
     }
@@ -301,13 +301,13 @@ class StatisticsService {
                 )
                 .limit(10)
                 .map {
-                    getStatsFieldMapping(it)
+                    getStatsFieldMapping(it, null)
                 }
         }
     }
 }
 
-fun getStatsFieldMapping(it: ResultRow, mapName: String = ""): Stats {
+fun getStatsFieldMapping(it: ResultRow, mapName: String?): Stats {
     return Stats(
         it[MatchData.steamId],
         it[MatchData.kills.sum()] ?: 0,
@@ -315,7 +315,7 @@ fun getStatsFieldMapping(it: ResultRow, mapName: String = ""): Stats {
         it[MatchData.assists.sum()] ?: 0,
         (it[MatchData.kills.sum().castTo<Float>(FloatColumnType())
             .div(MatchData.deaths.sum().castTo(FloatColumnType()))] ?: Float.MIN_VALUE),
-        mapName,
+        mapName ?: it[MatchData.mapName],
         it[MatchData.hs.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
         it[MatchData.rws.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
         it[MatchData.adr.avg().castTo(FloatColumnType())] ?: Float.MIN_VALUE,
