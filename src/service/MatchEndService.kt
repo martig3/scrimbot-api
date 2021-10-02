@@ -55,7 +55,8 @@ class MatchEndService {
             stringBuilder.appendLine(formatRow(i + 1, p))
         }
         stringBuilder.appendLine("```")
-        stringBuilder.appendLine("Congrats to the MVP `${mvp.name}` with the highest ADR of `${mvp.adr}`!\n")
+        stringBuilder.appendLine("Congrats to the MVP `${mvp.name}` with the highest ADR of " +
+                "`${String.format("%.2f", mvp.adr.absoluteValue)}`!\n")
         stringBuilder.appendLine("Download demo: $shareLink")
         val channel = jda.getTextChannelById(discordTextChannelId)
         channel?.sendMessage(stringBuilder.toString())?.queue()
