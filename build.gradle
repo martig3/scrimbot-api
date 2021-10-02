@@ -17,7 +17,7 @@ apply plugin: 'kotlin'
 apply plugin: 'application'
 
 group 'com.martige'
-version '0.4.3'
+version '0.4.4'
 mainClassName = "io.ktor.server.netty.EngineMain"
 task stage {
     dependsOn installDist
