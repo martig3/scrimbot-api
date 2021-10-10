@@ -148,10 +148,11 @@ fun Application.module() {
                     val steamId: String = call.parameters["steamid"].toString()
                     val length: Int? = call.parameters["length"]?.toIntOrNull()
                     val mapName: String = call.parameters["map"] ?: ""
+                    val mapCountLimit: Int = call.parameters["mapCountLimit"]?.toIntOrNull() ?: 0
                     val lengthParamExists: Boolean = (call.parameters["length"]?.toIntOrNull() ?: -1) > 0
                     val results: List<Stats>? = when (call.parameters["option"].toString() to lengthParamExists) {
-                        "top10" to false -> StatisticsService().getTopTenPlayers(mapName)
-                        "top10" to true -> StatisticsService().getTopTenPlayersMonthRange(length, mapName)
+                        "top10" to false -> StatisticsService().getTopTenPlayers(mapName, mapCountLimit)
+                        "top10" to true -> StatisticsService().getTopTenPlayersMonthRange(length, mapName, mapCountLimit)
                         "range" to true -> StatisticsService().getMonthRangeStats(steamId, length, mapName)
                         "maps" to false -> StatisticsService().getTopMaps(steamId)
                         "maps" to true -> StatisticsService().getTopMapsRange(steamId, length)
