@@ -127,7 +127,7 @@ class StatisticsService {
 
     }
 
-    fun getTopTenPlayers(mapName: String): List<Stats> {
+    fun getTopTenPlayers(mapName: String, mapCountLimit: Int = 0): List<Stats> {
         return transaction {
             MatchData.slice(
                 MatchData.steamId,
@@ -147,7 +147,7 @@ class StatisticsService {
                     FloatColumnType()
                 ).div(MatchData.matchId.count().castTo(FloatColumnType())).castTo<Float>(FloatColumnType()),
             ).select { MatchData.mapName.like("%$mapName%") }
-                .having { MatchData.matchId.count().greaterEq(10) }
+                .having { MatchData.matchId.count().greaterEq(mapCountLimit) }
                 .groupBy(MatchData.steamId)
                 .orderBy(
                     MatchData.adr.avg().castTo<Float>(FloatColumnType()) to SortOrder.DESC
@@ -159,7 +159,7 @@ class StatisticsService {
         }
     }
 
-    fun getTopTenPlayersMonthRange(length: Int?, mapName: String): List<Stats>? {
+    fun getTopTenPlayersMonthRange(length: Int?, mapName: String, mapCountLimit: Int = 0): List<Stats>? {
         if (length == null) {
             return null
         }
@@ -184,11 +184,9 @@ class StatisticsService {
                 ).div(MatchData.matchId.count().castTo(FloatColumnType())).castTo<Float>(FloatColumnType()),
             ).select {
                 MatchData.createTime.greaterEq(pastTime)
-                    .and(
-                        MatchData.matchId.notLike("init%")
-                            .and(MatchData.mapName.like("%$mapName%"))
-                    )
+                    .and(MatchData.mapName.like("%$mapName%"))
             }
+                .having { MatchData.matchId.count().greaterEq(mapCountLimit) }
                 .groupBy(MatchData.steamId)
                 .orderBy(
                     MatchData.adr.avg().castTo<Float>(FloatColumnType()) to SortOrder.DESC
