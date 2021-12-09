@@ -2,13 +2,11 @@ package com.martige
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.ktor.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.transaction
 
-@KtorExperimentalAPI
 object DatabaseFactory {
 
     private val dbUrl = System.getenv("DB_URL")

@@ -1,9 +1,9 @@
 package com.martige.service
 
+import com.martige.model.*
+import com.martige.model.demostatsservice.Player
 import io.ktor.client.*
 import io.ktor.client.request.*
-import model.*
-import model.demostatsservice.Player
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.case
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.div

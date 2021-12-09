@@ -1,6 +1,6 @@
 package com.martige.service
 
-import model.DatHostMatch
+import com.martige.model.DatHostMatch
 import net.dv8tion.jda.api.JDA
 import kotlin.math.absoluteValue
 

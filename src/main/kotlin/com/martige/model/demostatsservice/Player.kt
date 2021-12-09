@@ -1,4 +1,4 @@
-package model.demostatsservice
+package com.martige.model.demostatsservice
 
 data class Player(
     val adr: Double,

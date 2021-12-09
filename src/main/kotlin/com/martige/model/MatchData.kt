@@ -1,4 +1,4 @@
-package model
+package com.martige.model
 
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Table

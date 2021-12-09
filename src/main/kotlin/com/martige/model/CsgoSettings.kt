@@ -1,4 +1,4 @@
-package model
+package com.martige.model
 
 data class CsgoSettings(
     val autoload_configs: List<Any>?,
