@@ -30,7 +30,7 @@ dependencies {
     implementation "net.dv8tion:JDA:5.0.0-alpha.2"
     implementation "com.squareup.okhttp3:okhttp:4.9.3"
     implementation "org.jetbrains.exposed:exposed:0.17.14"
-    implementation "com.zaxxer:HikariCP:5.0.0"
+    implementation "com.zaxxer:HikariCP:4.0.3"
     implementation "org.postgresql:postgresql:42.3.1"
     testImplementation "io.ktor:ktor-server-tests:$ktor_version"
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
