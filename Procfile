@@ -1,1 +1,1 @@
-web: build/install/scrimbot-api/bin/scrimbot-api
+web: ./build/install/scrimbot-api/bin/scrimbot-api

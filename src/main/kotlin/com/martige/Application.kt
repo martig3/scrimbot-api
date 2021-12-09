@@ -11,7 +11,6 @@ import io.ktor.client.*
 import io.ktor.client.engine.apache.*
 import io.ktor.client.features.*
 import io.ktor.client.features.json.*
-import io.ktor.client.features.logging.*
 import io.ktor.client.request.*
 import io.ktor.features.*
 import io.ktor.http.*
@@ -36,7 +35,6 @@ fun main() {
     }.start(wait = true)
 }
 
-@Suppress("unused") // Referenced in application.conf
 fun Application.module() {
     val statsHostUrl = System.getenv("stats_host_url") ?: "127.0.0.1"
     install(CORS) {
@@ -80,20 +78,10 @@ fun Application.module() {
         .disableCache(CacheFlag.VOICE_STATE)
         .disableCache(CacheFlag.MEMBER_OVERRIDES)
         .build()
-    val loggingLevel = try {
-        val logEnv = System.getenv("API_LOGGING_LEVEL")
-        LogLevel.valueOf(logEnv)
-    } catch (e: Exception) {
-        LogLevel.NONE
-    }
     val client = HttpClient(Apache) {
         engine {
             followRedirects = true
             socketTimeout = 60000
-        }
-        install(Logging) {
-            logger = Logger.DEFAULT
-            level = loggingLevel
         }
         install(JsonFeature) {
             serializer = GsonSerializer()
@@ -176,5 +164,8 @@ fun Application.module() {
         }
     }
 }
+
+
+
 
 
