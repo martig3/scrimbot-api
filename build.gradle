@@ -11,8 +11,9 @@ repositories {
     mavenCentral()
 }
 
-task stage(dependsOn: ['build', 'clean'])
-build.mustRunAfter clean
+tasks.create("stage") {
+    dependsOn("installDist")
+}
 
 dependencies {
     implementation "io.ktor:ktor-server-core:$ktor_version"
