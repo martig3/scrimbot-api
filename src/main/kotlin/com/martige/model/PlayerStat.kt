@@ -1,4 +1,4 @@
-package model
+package com.martige.model
 
 data class PlayerStat(
     val assists: Int,

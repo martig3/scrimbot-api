@@ -2,6 +2,8 @@ package com.martige
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.martige.model.DatHostMatch
+import com.martige.model.Stats
 import com.martige.service.*
 import io.ktor.application.*
 import io.ktor.auth.*
@@ -17,18 +19,22 @@ import io.ktor.jackson.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
-import model.DatHostMatch
-import model.Stats
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.MemberCachePolicy
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import java.util.*
 
-fun main(args: Array<String>): Unit = EngineMain.main(args)
+fun main() {
+    val port: Int = System.getenv("PORT").takeUnless { it.isNullOrEmpty() }?.toIntOrNull() ?: 8080
+    embeddedServer(Netty, port = port, host = "0.0.0.0") {
+        module()
+    }.start(wait = true)
+}
 
 @Suppress("unused") // Referenced in application.conf
 fun Application.module() {

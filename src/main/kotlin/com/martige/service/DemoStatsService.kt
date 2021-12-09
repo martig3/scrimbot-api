@@ -1,15 +1,9 @@
 package com.martige.service
 
+import com.martige.model.demostatsservice.DemoStatsResponse
+import com.martige.model.demostatsservice.Player
 import io.ktor.client.*
 import io.ktor.client.request.*
-import io.ktor.client.request.forms.*
-import io.ktor.content.*
-import io.ktor.content.ByteArrayContent
-import io.ktor.http.*
-import io.ktor.http.content.*
-import model.demostatsservice.DemoStatsResponse
-import model.demostatsservice.Player
-import java.io.File
 import java.util.*
 
 class DemoStatsService {

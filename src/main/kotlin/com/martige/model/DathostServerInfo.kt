@@ -1,4 +1,4 @@
-package model
+package com.martige.model
 
 data class DathostServerInfo(
     val added_voice_server: Any?,

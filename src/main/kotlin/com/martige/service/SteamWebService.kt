@@ -1,6 +1,6 @@
 package com.martige.service
 
-import model.SteamWebAPIResponse
+import com.martige.model.SteamWebAPIResponse
 import io.ktor.client.*
 import io.ktor.client.request.*
 

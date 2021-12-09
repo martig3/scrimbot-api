@@ -1,4 +1,4 @@
-package model
+package com.martige.model
 
 data class DatHostMatch(
     val cancel_reason: String?,

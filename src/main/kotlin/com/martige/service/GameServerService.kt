@@ -1,15 +1,11 @@
 package com.martige.service
 
+import com.martige.model.DathostServerInfo
 import io.ktor.client.*
 import io.ktor.client.request.*
-import model.DatHostMatch
-import model.DathostServerInfo
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import java.io.File
 import java.util.*
 import java.util.concurrent.TimeUnit
 
