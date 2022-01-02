@@ -159,6 +159,75 @@ class StatisticsService {
         }
     }
 
+    fun getPlayerStats(mapName: String, steamIds: List<String>): List<Stats> {
+        return transaction {
+            MatchData.slice(
+                MatchData.steamId,
+                MatchData.kills.sum(),
+                MatchData.deaths.sum(),
+                MatchData.assists.sum(),
+                MatchData.kills.sum().castTo<Float>(FloatColumnType())
+                    .div(MatchData.deaths.sum().castTo(FloatColumnType())),
+                MatchData.adr.avg().castTo<Float>(FloatColumnType()),
+                MatchData.hs.avg().castTo<Float>(FloatColumnType()),
+                MatchData.rating.avg().castTo<Float>(FloatColumnType()),
+                MatchData.rws.avg().castTo<Float>(FloatColumnType()),
+                MatchData.efpr.avg().castTo<Float>(FloatColumnType()),
+                MatchData.matchId.count().castTo<Int>(IntegerColumnType()),
+                Sum(
+                    case().When(MatchData.matchResult.eq("W"), intLiteral(1)).Else(intLiteral(0)),
+                    FloatColumnType()
+                ).div(MatchData.matchId.count().castTo(FloatColumnType())).castTo<Float>(FloatColumnType()),
+            ).select { MatchData.mapName.like("%$mapName%") }
+                .having { MatchData.steamId inList steamIds }
+                .groupBy(MatchData.steamId)
+                .orderBy(
+                    MatchData.adr.avg().castTo<Float>(FloatColumnType()) to SortOrder.DESC
+                )
+                .map {
+                    getStatsFieldMapping(it, mapName)
+                }
+        }
+    }
+
+    fun getPlayerStatsMonthsRange(mapName: String, steamIds: List<String>, length: Int?): List<Stats>? {
+        if (length == null) {
+            return null
+        }
+        val pastTime = DateTime().minusMonths(length)
+        return transaction {
+            MatchData.slice(
+                MatchData.steamId,
+                MatchData.kills.sum(),
+                MatchData.deaths.sum(),
+                MatchData.assists.sum(),
+                MatchData.kills.sum().castTo<Float>(FloatColumnType())
+                    .div(MatchData.deaths.sum().castTo(FloatColumnType())),
+                MatchData.adr.avg().castTo<Float>(FloatColumnType()),
+                MatchData.hs.avg().castTo<Float>(FloatColumnType()),
+                MatchData.rating.avg().castTo<Float>(FloatColumnType()),
+                MatchData.rws.avg().castTo<Float>(FloatColumnType()),
+                MatchData.efpr.avg().castTo<Float>(FloatColumnType()),
+                MatchData.matchId.count().castTo<Int>(IntegerColumnType()),
+                Sum(
+                    case().When(MatchData.matchResult.eq("W"), intLiteral(1)).Else(intLiteral(0)),
+                    FloatColumnType()
+                ).div(MatchData.matchId.count().castTo(FloatColumnType())).castTo<Float>(FloatColumnType()),
+            ).select {
+                MatchData.createTime.greaterEq(pastTime)
+                    .and(MatchData.mapName.like("%$mapName%"))
+            }
+                .having { MatchData.steamId inList steamIds }
+                .groupBy(MatchData.steamId)
+                .orderBy(
+                    MatchData.adr.avg().castTo<Float>(FloatColumnType()) to SortOrder.DESC
+                )
+                .map {
+                    getStatsFieldMapping(it, mapName)
+                }
+        }
+    }
+
     fun getTopTenPlayersMonthRange(length: Int?, mapName: String, mapCountLimit: Int = 0): List<Stats>? {
         if (length == null) {
             return null
