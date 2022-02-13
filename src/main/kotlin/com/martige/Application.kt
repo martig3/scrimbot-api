@@ -152,6 +152,15 @@ fun Application.module() {
                         "range" to true -> StatisticsService().getMonthRangeStats(steamId, length, mapName)
                         "maps" to false -> StatisticsService().getTopMaps(steamId)
                         "maps" to true -> StatisticsService().getTopMapsRange(steamId, length)
+                        "players" to false -> StatisticsService().getPlayerStats(
+                            mapName,
+                            steamIds = call.parameters["steamids"].toString().split(",")
+                        )
+                        "players" to true -> StatisticsService().getPlayerStatsMonthsRange(
+                            mapName,
+                            steamIds = call.parameters["steamids"].toString().split(","),
+                            length
+                        )
                         else -> StatisticsService().getStatistics(steamId, mapName)
                     }
                     results?.let {
