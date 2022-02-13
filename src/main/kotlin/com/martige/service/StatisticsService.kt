@@ -34,16 +34,16 @@ class StatisticsService {
             .filter { it.id == gameServerId }
             .map { it.csgo_settings?.mapgroup_start_map }
             .firstOrNull() ?: "Unknown Map"
-        match.player_stats?.forEach { it ->
-            if (!it.steam_id.trim().startsWith("STEAM", true)) {
+        playerStat.forEach {
+            if (!it.steamId.trim().startsWith("STEAM", true)) {
                 return@forEach
             }
-            val steamIdUpdated = it.steam_id.trim().replaceRange(6, 7, "1")
+            val steamIdUpdated = it.steamId.trim().replaceRange(6, 7, "1")
             val kills = it.kills
             val assists = it.assists
             val deaths = it.deaths
             val playerTeamScore = when {
-                match.team1_steam_ids.contains(it.steam_id) -> match.team1_stats.score
+                match.team1_steam_ids.contains(it.steamId) -> match.team1_stats.score
                 else -> match.team2_stats.score
             }
             val enemyTeamScore = when (playerTeamScore) {
@@ -76,25 +76,20 @@ class StatisticsService {
     }
 
     fun createScoreboard(
-        matchPlayers: List<PlayerStat>,
         playerStat: List<Player>,
-        steamIds: HashMap<String, String>
     ): List<ScoreboardRow> {
-        val matchHash = HashMap<String, PlayerStat>()
-        val statHash = HashMap<String, Player>()
-        matchPlayers.forEach { matchHash[it.steam_id] = it }
-        playerStat.forEach { statHash[it.steamid] = it }
-        return matchPlayers.map {
+        return playerStat.map {
             ScoreboardRow(
-                it.steam_id,
-                steamIds[it.steam_id].orEmpty(),
-                matchHash[it.steam_id]?.kills ?: 0,
-                matchHash[it.steam_id]?.assists ?: 0,
-                matchHash[it.steam_id]?.deaths ?: 0,
-                statHash[it.steam_id]?.adr ?: 0.0,
-                statHash[it.steam_id]?.hsprecent ?: 0.0,
-                statHash[it.steam_id]?.effFlashes ?: 0,
-                statHash[it.steam_id]?.efpr ?: 0.0
+                it.steamid,
+                it.name,
+                it.kills,
+                it.assists,
+                it.deaths,
+                it.adr,
+                it.hsprecent,
+                it.effFlashes,
+                it.efpr,
+                it.team,
             )
         }.toList()
     }

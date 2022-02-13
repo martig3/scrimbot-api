@@ -6,7 +6,7 @@ import kotlin.math.absoluteValue
 
 data class ScoreboardRow(
     val steamId: String,
-    val name: String?,
+    val name: String,
     val kills: Int,
     val assists: Int,
     val deaths: Int,
@@ -14,6 +14,7 @@ data class ScoreboardRow(
     val hsPercent: Double,
     val effFlashes: Int,
     val efpr: Double,
+    val team: String,
 )
 
 class MatchEndService {
@@ -26,18 +27,16 @@ class MatchEndService {
         map: String,
         shareLink: String?
     ) {
-        val teamOneScore = match.team1_stats.score
+        val teamOneScore =  match.team1_stats.score
         val teamTwoScore = match.team2_stats.score
-        val teamOneRows =
-            match.player_stats
-                ?.filter { match.team1_steam_ids.contains(it.steam_id) }
-                ?.map { p -> scoreboard.first { it.steamId == p.steam_id } }
-                ?.sortedByDescending { it.adr }
-        val teamTwoRows =
-            match.player_stats
-                ?.filter { match.team2_steam_ids.contains(it.steam_id) }
-                ?.map { p -> scoreboard.first { it.steamId == p.steam_id } }
-                ?.sortedByDescending { it.adr }
+        val teamOneTeamString = scoreboard.first { match.team1_steam_ids.contains(it.steamId) }.team
+        val teamOneRows = scoreboard
+                .filter { it.team == teamOneTeamString}
+                .sortedByDescending { it.adr }
+        val teamTwoRows = scoreboard
+                .filter { it.team != teamOneTeamString}
+                .sortedByDescending { it.adr }
+
         val mvpAdr = scoreboard.maxOf { it.adr }
         val mvp = scoreboard.first { it.adr == mvpAdr }
         val stringBuilder = StringBuilder()
@@ -46,12 +45,12 @@ class MatchEndService {
         stringBuilder.appendLine("    Player              K   A   D   ADR     HS%     EF   ")
         stringBuilder.appendLine("---------------------------------------------------------")
         stringBuilder.appendLine("Team A")
-        teamOneRows?.forEachIndexed { i, p ->
+        teamOneRows.forEachIndexed { i, p ->
             stringBuilder.appendLine(formatRow(i + 1, p))
         }
         stringBuilder.appendLine("")
         stringBuilder.appendLine("Team B")
-        teamTwoRows?.forEachIndexed { i, p ->
+        teamTwoRows.forEachIndexed { i, p ->
             stringBuilder.appendLine(formatRow(i + 1, p))
         }
         stringBuilder.appendLine("```")
@@ -64,7 +63,9 @@ class MatchEndService {
 
     private fun formatRow(i: Int, p: ScoreboardRow): String {
         val indexString = i.toString().padStart(2, ' ')
-        val personaName = p.name?.replace("_", " ")?.padEnd(20, ' ')
+        var personaName = p.name.replace("_", " ").trim()
+        if (personaName.length > 18) personaName = personaName.substring(0, 18)
+        personaName = personaName.padEnd(20, ' ')
         return "$indexString. $personaName" +
                 p.kills.toString().padEnd(4, ' ') +
                 p.assists.toString().padEnd(4, ' ') +
