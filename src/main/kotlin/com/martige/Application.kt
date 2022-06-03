@@ -119,20 +119,12 @@ fun Application.module() {
                         return@async link
                     }
                     val demoStats = async {
-                        log.info("Retrieving detailed stats from demo-stats-service...")
+                        log.info("Retrieving detailed stats from csgo-demo-stats api...")
                         return@async DemoStatsService().getDemoStats(client, match.game_server_id, match.id)
-                    }
-                    val steamNames = async {
-                        log.info("Retrieving persona names from steam api...")
-                        return@async SteamWebService().getSteamNames(
-                            match.team1_steam_ids + match.team2_steam_ids, client
-                        )
                     }
                     val scoreboard = async {
                         return@async StatisticsService().createScoreboard(
-                            match.player_stats,
                             demoStats.await(),
-                            steamNames.await()
                         )
                     }
                     val scoreboardRows = scoreboard.await()
