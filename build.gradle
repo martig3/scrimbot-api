@@ -1,10 +1,11 @@
 plugins {
     id 'application'
     id 'org.jetbrains.kotlin.jvm' version '1.6.0'
+    id 'maven-publish'
 }
 
 group = "com.martige"
-version = "0.5.6"
+version = "0.5.7"
 mainClassName = "com.martige.ApplicationKt"
 
 repositories {
@@ -20,6 +21,19 @@ compileKotlin {
 }
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/martig3/scrimbot-api"
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
 }
 
 dependencies {
