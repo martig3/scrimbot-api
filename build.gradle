@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.martige"
-version = "0.5.8"
+version = "0.5.9"
 mainClassName = "com.martige.ApplicationKt"
 
 repositories {
@@ -31,6 +31,14 @@ publishing {
             credentials {
                 username = System.getenv("USERNAME")
                 password = System.getenv("TOKEN")
+            }
+        }
+    }
+    publications {
+        register("jar", MavenPublication) {
+            from(components["java"])
+            pom {
+                url.set("https://github.com/Martig3/scrimbot-api.git")
             }
         }
     }
