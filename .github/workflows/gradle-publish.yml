@@ -39,6 +39,12 @@ jobs:
       uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
       with:
         arguments: build
+    - name: Upload jar
+      uses: actions/upload-artifact@v3
+      with:
+        name: zip
+        path: build/distributions/scrimbot-api-${{ github.event.inputs.version_number }}.zip
+        if-no-files-found: error  
   create_release:
     name: Create Release
     runs-on: ubuntu-latest
@@ -47,7 +53,7 @@ jobs:
       - name: Download a Build Artifact
         uses: actions/download-artifact@v3.0.0
         with:
-          name: jar
+          name: zip
           path: .
       - name: Show Artifacts
         run: ls -R
@@ -59,7 +65,7 @@ jobs:
           name: Version ${{ github.event.inputs.version_number }}
           draft: true
           prerelease: false
-          artifacts: "*.jar"
+          artifacts: "*.zip"
           body: |
             ${{ github.event.inputs.info }}
             
