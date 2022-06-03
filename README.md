@@ -19,7 +19,7 @@ Microservice for processing CSGO end of match payloads and statistics queries.
 
 ## Setup
 
-Until releases are available, clone & `./gradlew run`
+Extract release .zip and navigate to the `/bin` directory and run your platform's appropriate executable with the following env variables:
 
 ### Environment Variables
 
