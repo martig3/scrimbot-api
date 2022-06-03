@@ -73,4 +73,4 @@ jobs:
             ### Setup
             Setup instructions can be found in the [README section](https://github.com/Martig3/scrimbot-api#setup)
             
-            # Download: [scrimbot-api-${{ github.event.inputs.version_number }}.jar](https://github.com/Martig3/scrimbot-api/releases/download/${{ github.event.inputs.version_number }}/scrimbot-api-${{ github.event.inputs.version_number }}.jar)
+            # Download: [scrimbot-api-${{ github.event.inputs.version_number }}.zip](https://github.com/Martig3/scrimbot-api/releases/download/${{ github.event.inputs.version_number }}/scrimbot-api-${{ github.event.inputs.version_number }}.zip)
