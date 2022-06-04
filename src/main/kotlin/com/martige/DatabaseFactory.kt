@@ -13,8 +13,10 @@ object DatabaseFactory {
     private val dbUser = System.getenv("DB_USER")
     private val dbPassword = System.getenv("DB_PASSWORD")
 
-    fun init() {
-        Database.connect(hikari())
+    fun init(): HikariDataSource {
+        val config = hikari()
+        Database.connect(config)
+        return config
     }
 
     private fun hikari(): HikariDataSource {

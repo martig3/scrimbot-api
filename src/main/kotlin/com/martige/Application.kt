@@ -26,6 +26,7 @@ import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.MemberCachePolicy
 import net.dv8tion.jda.api.utils.cache.CacheFlag
+import org.flywaydb.core.Flyway
 import java.util.*
 
 fun main() {
@@ -91,7 +92,8 @@ fun Application.module() {
         }
     }
 
-    DatabaseFactory.init()
+    val hikariConfig = DatabaseFactory.init()
+    Flyway.configure().dataSource(hikariConfig.dataSource).load().migrate()
 
     routing {
         route("/api") {
