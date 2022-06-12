@@ -2,7 +2,7 @@
 FROM openjdk:alpine AS builder
 WORKDIR .
 COPY . .
-RUN ./gradlew build
+RUN ./gradlew build install
 
 #final stage
 FROM alpine:latest
