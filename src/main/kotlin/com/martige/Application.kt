@@ -5,50 +5,53 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.martige.model.DatHostMatch
 import com.martige.model.Stats
 import com.martige.service.*
-import io.ktor.application.*
-import io.ktor.auth.*
 import io.ktor.client.*
-import io.ktor.client.engine.apache.*
-import io.ktor.client.features.*
-import io.ktor.client.features.json.*
-import io.ktor.client.request.*
-import io.ktor.features.*
+import io.ktor.client.engine.okhttp.*
 import io.ktor.http.*
-import io.ktor.jackson.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
+import io.ktor.serialization.jackson.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.plugins.callloging.*
+import io.ktor.server.plugins.cors.routing.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.MemberCachePolicy
 import net.dv8tion.jda.api.utils.cache.CacheFlag
+import org.slf4j.event.Level
+import java.time.Duration
 import java.util.*
+
 
 fun main() {
     val port: Int = System.getenv("PORT").takeUnless { it.isNullOrEmpty() }?.toIntOrNull() ?: 8080
-    embeddedServer(Netty, port = port, host = "0.0.0.0") {
-        module()
-    }.start(wait = true)
+    embeddedServer(Netty, port = port, host = "0.0.0.0", module = Application::applicationModule).start(wait = true)
 }
 
 fun Application.module() {
     val statsHostUrl = System.getenv("stats_host_url") ?: "127.0.0.1"
     install(CORS) {
-        method(HttpMethod.Post)
-        method(HttpMethod.Get)
-        host("dathost.net")
-        host(statsHostUrl)
+        allowMethod(HttpMethod.Post)
+        allowMethod(HttpMethod.Get)
+        allowHost("dathost.net")
+        allowHost(statsHostUrl)
     }
 
-    install(ContentNegotiation) {
+    install(io.ktor.server.plugins.contentnegotiation.ContentNegotiation) {
         jackson {
             enable(SerializationFeature.INDENT_OUTPUT)
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         }
+    }
+
+    install(CallLogging) {
+        level = Level.INFO
     }
 
     val authUser = System.getenv("STATS_USER").trim()
@@ -74,21 +77,20 @@ fun Application.module() {
         .setMemberCachePolicy(MemberCachePolicy.NONE)
         .disableCache(CacheFlag.ACTIVITY)
         .disableCache(CacheFlag.CLIENT_STATUS)
-        .disableCache(CacheFlag.EMOTE)
         .disableCache(CacheFlag.VOICE_STATE)
         .disableCache(CacheFlag.MEMBER_OVERRIDES)
         .build()
-    val client = HttpClient(Apache) {
+    val client = HttpClient(OkHttp) {
+        install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
+            jackson()
+        }
         engine {
-            followRedirects = true
-            socketTimeout = 60000
+            config {
+                followRedirects(true)
+                callTimeout(Duration.ofSeconds(6000))
+            }
         }
-        install(JsonFeature) {
-            serializer = GsonSerializer()
-        }
-        defaultRequest {
-            accept(ContentType.Application.Json)
-        }
+
     }
 
     DatabaseFactory.init()
@@ -98,7 +100,7 @@ fun Application.module() {
             authenticate {
                 post("/match-end") {
                     val match = call.receive<DatHostMatch>()
-                    if (match.player_stats == null || match.player_stats.isEmpty()) {
+                    if (match.player_stats.isNullOrEmpty()) {
                         call.respond(HttpStatusCode.BadRequest)
                         return@post
                     }
@@ -108,7 +110,7 @@ fun Application.module() {
                     val upload = if (uploadParam?.toBooleanStrictOrNull() == null) true else uploadParam.toBoolean()
                     val map = async { GameServerService().getCurrentMap(client, match.game_server_id) }
                     if (delay) {
-                        log.info("Waiting for GOTV to finish...")
+                        call.application.environment.log.info("Waiting for GOTV to finish...")
                         delay(140000)
                     }
                     val shareLink = async {
@@ -119,7 +121,7 @@ fun Application.module() {
                         return@async link
                     }
                     val demoStats = async {
-                        log.info("Retrieving detailed stats from csgo-demo-stats api...")
+                        call.application.environment.log.info("Retrieving detailed stats from csgo-demo-stats api...")
                         return@async DemoStatsService().getDemoStats(client, match.game_server_id, match.id)
                     }
                     val scoreboard = async {
@@ -128,7 +130,9 @@ fun Application.module() {
                         )
                     }
                     val scoreboardRows = scoreboard.await()
+                    call.application.environment.log.info("Sending end of match message...")
                     MatchEndService().sendEOMMessage(match, scoreboardRows, jda, map.await(), shareLink.await())
+                    call.application.environment.log.info("Uploading stats...")
                     StatisticsService().uploadStatistics(match, scoreboardRows, match.game_server_id, client)
                     call.respond(HttpStatusCode.OK)
                 }
@@ -140,7 +144,12 @@ fun Application.module() {
                     val lengthParamExists: Boolean = (call.parameters["length"]?.toIntOrNull() ?: -1) > 0
                     val results: List<Stats>? = when (call.parameters["option"].toString() to lengthParamExists) {
                         "top10" to false -> StatisticsService().getTopTenPlayers(mapName, mapCountLimit)
-                        "top10" to true -> StatisticsService().getTopTenPlayersMonthRange(length, mapName, mapCountLimit)
+                        "top10" to true -> StatisticsService().getTopTenPlayersMonthRange(
+                            length,
+                            mapName,
+                            mapCountLimit
+                        )
+
                         "range" to true -> StatisticsService().getMonthRangeStats(steamId, length, mapName)
                         "maps" to false -> StatisticsService().getTopMaps(steamId)
                         "maps" to true -> StatisticsService().getTopMapsRange(steamId, length)
@@ -148,11 +157,13 @@ fun Application.module() {
                             mapName,
                             steamIds = call.parameters["steamids"].toString().split(",")
                         )
+
                         "players" to true -> StatisticsService().getPlayerStatsMonthsRange(
                             mapName,
                             steamIds = call.parameters["steamids"].toString().split(","),
                             length
                         )
+
                         else -> StatisticsService().getStatistics(steamId, mapName)
                     }
                     results?.let {
@@ -164,6 +175,10 @@ fun Application.module() {
             }
         }
     }
+}
+
+fun Application.applicationModule() {
+    module()
 }
 
 
