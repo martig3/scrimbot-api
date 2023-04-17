@@ -3,6 +3,7 @@ package com.martige.service
 import com.martige.model.*
 import com.martige.model.demostatsservice.Player
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.request.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.case
@@ -29,7 +30,7 @@ class StatisticsService {
         val serverListUrl = "https://dathost.net/api/0.1/game-servers"
         val serverList: List<DathostServerInfo> = client.get(serverListUrl) {
             header("Authorization", dathostAuth)
-        }
+        }.body()
         val map = serverList
             .filter { it.id == gameServerId }
             .map { it.csgo_settings?.mapgroup_start_map }
