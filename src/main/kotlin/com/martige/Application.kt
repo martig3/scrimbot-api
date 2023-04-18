@@ -82,7 +82,9 @@ fun Application.module() {
         .build()
     val client = HttpClient(OkHttp) {
         install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
-            jackson()
+            jackson {
+                disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            }
         }
         engine {
             config {

@@ -11,7 +11,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 class GameServerService {
-    val dathostAuth = "Basic " + Base64.getEncoder()
+    private val dathostAuth = "Basic " + Base64.getEncoder()
         .encodeToString(
             "${System.getenv("DATHOST_USERNAME")}:${System.getenv("DATHOST_PASSWORD")}"
                 .toByteArray()

@@ -16,12 +16,16 @@ class DemoStatsService {
         )
 
     suspend fun getDemoStats(client: HttpClient, gameServerId: String, matchId: String): List<Player> {
-        val stats: DemoStatsResponse = client.get(demoStatsUrl) {
-            parameter("url", "https://dathost.net/api/0.1/game-servers/$gameServerId/files/$matchId.dem")
-            parameter("auth", GameServerService().dathostAuth)
-            header("Authorization", demoStatsAuth)
-        }.body()
-        return stats.players
+        val demoFileUrl = "https://dathost.net/api/0.1/game-servers/$gameServerId/files/$matchId.dem"
+        GameServerService().getGameServerFile(demoFileUrl).use { response ->
+            response.body?.byteStream().use { `in` ->
+                val stats: DemoStatsResponse = client.post(demoStatsUrl) {
+                    setBody(`in`)
+                    header("Authorization", demoStatsAuth)
+                }.body()
+                return stats.players
+            }
+        }
     }
 
 }
