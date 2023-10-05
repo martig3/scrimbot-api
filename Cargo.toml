@@ -1,0 +1,31 @@
+[package]
+name = "scrimbot-api"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+axum = "0.6.12"
+axum-macros = "0.3.7"
+chrono = "*"
+futures = "0.3"
+tokio = { version = "*", features = ["full"] }
+tokio-util = { version = "0.7", features = ["io"] }
+tokio-stream = { version = "0.1.11", features = ["fs"] }
+tracing = "0.1"
+serde = { version = "*", features = ["derive"] }
+serde_json = "*"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tower = "*"
+tower-http = { version = "*", features = ["full"] }
+dotenvy = "*"
+anyhow = "*"
+reqwest = { version = "0.11", default-features = false, features = ["rustls-tls", "json"] }
+rust-s3 = { version = "0.33.0", default-features = false, features = ["with-tokio", "tokio-rustls-tls"] }
+sqlx = { version = "0.7.2", features = ["runtime-tokio-rustls", "postgres", "macros", "migrate", "time", "tls-rustls"] }
+base64 = "0.21.4"
+bytes = "1.5.0"
+derive_more = "0.99.17"
+regex = "1.9.6"
+thiserror = "1.0.49"
