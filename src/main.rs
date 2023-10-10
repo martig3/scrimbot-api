@@ -1,4 +1,5 @@
 mod dathost;
+mod db;
 mod errors;
 mod models;
 pub mod routes;
@@ -13,6 +14,7 @@ use crate::routes::routes;
 use dotenvy::dotenv;
 use s3::creds::Credentials;
 use s3::{Bucket, Region};
+use sqlx::migrate::Migrator;
 use sqlx::PgPool;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -25,7 +27,7 @@ use tower_http::{
     LatencyUnit, ServiceBuilderExt,
 };
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-
+static MIGRATOR: Migrator = sqlx::migrate!();
 #[derive(Clone)]
 pub struct AppState {
     db: PgPool,
@@ -86,7 +88,10 @@ async fn main() {
     let pool = PgPool::connect(&env::var("DATABASE_URL").expect("Expected DATABASE_URL"))
         .await
         .unwrap();
-
+    if let Err(error) = MIGRATOR.run(&pool).await {
+        tracing::error!("Migration error: {}", error);
+        std::process::exit(1);
+    }
     let dathost = DathostClient::new().expect("unable to create DatHost client");
 
     let region = env::var("AWS_REGION").unwrap_or_else(|_| "auto".to_string());
