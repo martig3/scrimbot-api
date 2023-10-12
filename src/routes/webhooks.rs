@@ -57,8 +57,7 @@ pub async fn match_end(
         return Err(Error::DemoUploadError);
     }
     let eom = end_of_match_msg(&state.steam, &dathost_match.0).await?;
-    let bucket_base_url = env::var("BUCKET_BASEURL").expect("BUCKET_BASEURL must be set");
-    let bucket_name = env::var("BUCKET_NAME").expect("BUCKET_NAME must be set");
+    let bucket_base_url = env::var("BUCKET_BASE_URL").expect("BUCKET_BASE_URL must be set");
     let components = vec![ActionRow {
         component_type: 1,
         components: vec![MessageComponent {
@@ -66,9 +65,13 @@ pub async fn match_end(
             label: "Download Demo".to_string(),
             style: 5,
             custom_id: None,
-            url: Some(format!("{}/{}/{}", bucket_base_url, bucket_name, &path)),
+            url: Some(format!("{}/{}", bucket_base_url, &path)),
         }],
     }];
-    state.discord.send_msg(&eom, components).await?;
+    println!("sending end of match message");
+    let discord_resp = state.discord.send_msg(&eom, components).await?;
+    if discord_resp.status() != 200 {
+        eprintln!("discord error resp: {}", discord_resp.text().await?);
+    }
     Ok(StatusCode::OK)
 }

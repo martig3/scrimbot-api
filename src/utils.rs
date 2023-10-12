@@ -32,7 +32,8 @@ pub async fn end_of_match_msg(
                 .iter()
                 .find(|u| u.steamid == team1_players.first().unwrap().steam_id_64)
                 .unwrap(),
-            team1_players.first().unwrap().stats.damage_dealt,
+            team1_players.first().unwrap().stats.damage_dealt as f32
+                / dathost_match.rounds_played as f32,
         )
     } else {
         (
@@ -40,13 +41,14 @@ pub async fn end_of_match_msg(
                 .iter()
                 .find(|u| u.steamid == team2_players.first().unwrap().steam_id_64)
                 .unwrap(),
-            team2_players.first().unwrap().stats.damage_dealt,
+            team2_players.first().unwrap().stats.damage_dealt as f32
+                / dathost_match.rounds_played as f32,
         )
     };
     let mut msg = String::new();
     msg.push_str(
         format!(
-            "**{} - {}** `{}`",
+            "**{} - {}** `{}`\n",
             dathost_match.team1.stats.score,
             dathost_match.team2.stats.score,
             dathost_match.settings.map
@@ -54,16 +56,18 @@ pub async fn end_of_match_msg(
         .as_str(),
     );
     msg.push_str("```md\n");
-    msg.push_str("  Player              K   D   A   ADR     HS%     EF   ENT \n");
-    msg.push_str("-----------------------------------------------------------\n");
+    msg.push_str("   Player              K   D   A   ADR     HS%     EF   ENT  1vX\n");
+    msg.push_str("----------------------------------------------------------------\n");
     msg.push_str(dathost_match.team1.name.as_str());
-    for p in team1_players {
-        msg.push_str(scoreboard_row(p, dathost_match.rounds_played, &steam_users).as_str())
+    msg.push_str("\n");
+    for (i, p) in team1_players.iter().enumerate() {
+        msg.push_str(scoreboard_row(p, dathost_match.rounds_played, &steam_users, i + 1).as_str())
     }
     msg.push_str("\n");
     msg.push_str(dathost_match.team2.name.as_str());
-    for p in team2_players {
-        msg.push_str(scoreboard_row(p, dathost_match.rounds_played, &steam_users).as_str())
+    msg.push_str("\n");
+    for (i, p) in team2_players.iter().enumerate() {
+        msg.push_str(scoreboard_row(p, dathost_match.rounds_played, &steam_users, i + 1).as_str())
     }
     msg.push_str("```\n");
     msg.push_str("\n");
@@ -77,7 +81,12 @@ pub async fn end_of_match_msg(
     Ok(msg)
 }
 
-fn scoreboard_row(p: &Player, rounds_played: i32, steam_users: &Vec<SteamUser>) -> String {
+fn scoreboard_row(
+    p: &Player,
+    rounds_played: i32,
+    steam_users: &Vec<SteamUser>,
+    i: usize,
+) -> String {
     let name = steam_users
         .iter()
         .find(|u| u.steamid == p.steam_id_64)
@@ -87,15 +96,15 @@ fn scoreboard_row(p: &Player, rounds_played: i32, steam_users: &Vec<SteamUser>) 
     let name = format!("{:<19}", name);
     let name = truncate(name.as_str(), 19);
     let adr = format!(
-        "{:1}",
-        (p.stats.damage_dealt.max(1) as f32 / rounds_played.max(1) as f32)
+        "{:.1}",
+        (p.stats.damage_dealt as f32 / rounds_played.max(1) as f32)
     );
     let hs = format!(
-        "{:1}",
-        (p.stats.kills_with_headshot.max(1) as f32 / p.stats.kills.max(1) as f32),
+        "{:.1}%",
+        (p.stats.kills_with_headshot as f32 / p.stats.kills.max(1) as f32) * 100.0,
     );
     format!(
-        "  {:<20}{:<4}{:<4}{:<4}{:<8}{:<8}{:<5}{:<4}\n",
+        "{i}. {:<20}{:<4}{:<4}{:<4}{:<8}{:<8}{:<5}{:<5}{:<5}\n",
         name,
         p.stats.kills,
         p.stats.deaths,
@@ -104,6 +113,7 @@ fn scoreboard_row(p: &Player, rounds_played: i32, steam_users: &Vec<SteamUser>) 
         hs,
         p.stats.flashes_enemies_blinded,
         p.stats.entry_successes,
+        p.stats.n1v_x_wins,
     )
 }
 

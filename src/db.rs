@@ -86,7 +86,7 @@ pub async fn create_match_stats(
             p.stats.kills,
             p.stats.assists,
             p.stats.deaths,
-            p.stats.damage_dealt.max(1) as f64 / dathost_match.rounds_played.max(1) as f64,
+            p.stats.damage_dealt as f64 / dathost_match.rounds_played.max(1) as f64,
             p.stats.n2ks,
             p.stats.n3ks,
             p.stats.n4ks,

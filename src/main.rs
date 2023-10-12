@@ -98,6 +98,7 @@ async fn main() {
         .unwrap();
     if let Err(error) = MIGRATOR.run(&pool).await {
         tracing::error!("Migration error: {}", error);
+        println!("Migration error: {}", error);
         std::process::exit(1);
     }
     let dathost = DathostClient::new().expect("unable to create Dathost client");
@@ -130,6 +131,7 @@ async fn main() {
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     tracing::debug!("listening on {}", addr);
+    println!("listening on {}", 3000);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await

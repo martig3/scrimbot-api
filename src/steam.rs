@@ -25,7 +25,7 @@ impl SteamClient {
             .unwrap();
         let resp = self
             .0
-            .post(format!(
+            .get(format!(
                 "{}/ISteamUser/GetPlayerSummaries/v0002",
                 STEAM_BASE_URL
             ))
