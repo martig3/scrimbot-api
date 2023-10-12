@@ -22,6 +22,7 @@ use s3::{Bucket, Region};
 use sqlx::migrate::Migrator;
 use sqlx::PgPool;
 use std::net::SocketAddr;
+use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
 use tower::ServiceBuilder;
@@ -31,7 +32,6 @@ use tower_http::{
     trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer},
     LatencyUnit, ServiceBuilderExt,
 };
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 static MIGRATOR: Migrator = sqlx::migrate!();
 #[derive(Clone)]
@@ -46,11 +46,15 @@ pub struct AppState {
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-    tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::new(
-            env::var("RUST_LOG").unwrap_or_else(|_| "scrimbot-api=debug".into()),
-        ))
-        .with(tracing_subscriber::fmt::layer())
+    tracing_subscriber::fmt()
+        .with_max_level(
+            tracing::Level::from_str(
+                env::var("RUST_LOG")
+                    .unwrap_or_else(|_| "INFO".to_string())
+                    .as_str(),
+            )
+            .unwrap(),
+        )
         .init();
 
     let sensitive_headers: Arc<[_]> = vec![header::AUTHORIZATION, header::COOKIE].into();
@@ -98,7 +102,6 @@ async fn main() {
         .unwrap();
     if let Err(error) = MIGRATOR.run(&pool).await {
         tracing::error!("Migration error: {}", error);
-        println!("Migration error: {}", error);
         std::process::exit(1);
     }
     let dathost = DathostClient::new().expect("unable to create Dathost client");
@@ -130,8 +133,7 @@ async fn main() {
         .layer(middleware);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-    tracing::debug!("listening on {}", addr);
-    println!("listening on {}", 3000);
+    tracing::info!("listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await

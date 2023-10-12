@@ -22,7 +22,7 @@ pub async fn match_end(
     dathost_match: Json<DathostMatchEnd>,
 ) -> impl IntoResponse {
     if let Some(reason) = &dathost_match.cancel_reason {
-        println!("cancel reason: {}", reason);
+        tracing::info!("cancel reason: {}", reason);
         return Ok(StatusCode::OK);
     }
     let created_match = create_match(&state.db, &dathost_match.0).await?;
@@ -37,7 +37,7 @@ pub async fn match_end(
             .parse::<u64>()
             .unwrap()
             + 30;
-        println!("sleeping for {} sec", tv_delay);
+        tracing::info!("sleeping for {} sec", tv_delay);
         sleep(Duration::from_secs(tv_delay)).await;
     }
     let stop_status = state.dathost.stop_server(&dathost_match.server_id).await?;
@@ -45,15 +45,15 @@ pub async fn match_end(
         return Err(Error::StopServerError);
     }
     let path = format!("{}.dem", dathost_match.id);
-    println!("fetching demo file '{}'", path);
+    tracing::info!("fetching demo file '{}'", path);
     let demo = state
         .dathost
         .get_file(&dathost_match.server_id, &path)
         .await?;
-    println!("uploading demo to s3");
+    tracing::info!("uploading demo to s3");
     let s3_status = state.bucket.put_object(&path, &demo).await?.status_code();
     if s3_status != 200 {
-        eprintln!("s3 error: {}", s3_status);
+        tracing::error!("s3 error: {}", s3_status);
         return Err(Error::DemoUploadError);
     }
     let eom = end_of_match_msg(&state.steam, &dathost_match.0).await?;
@@ -68,10 +68,10 @@ pub async fn match_end(
             url: Some(format!("{}/{}", bucket_base_url, &path)),
         }],
     }];
-    println!("sending end of match message");
+    tracing::info!("sending end of match message");
     let discord_resp = state.discord.send_msg(&eom, components).await?;
     if discord_resp.status() != 200 {
-        eprintln!("discord error resp: {}", discord_resp.text().await?);
+        tracing::error!("discord error resp: {}", discord_resp.text().await?);
     }
     Ok(StatusCode::OK)
 }

@@ -42,12 +42,12 @@ pub async fn post_logs(state: State<AppState>, body: String) -> impl IntoRespons
 
         if cmd == "!tech" {
             if let Err(s) = state.dathost.send_console_msg(&server_id, "say Either team can type !unpause to resume the match. Be sure both teams are ready before unpausing.".to_string()).await {
-                eprintln!("{:#?}", s);
+                tracing::error!("{:#?}", s);
             }
         }
 
         if status_code.as_u16() != 200 {
-            eprintln!("send console msg status: {}", status_code)
+            tracing::error!("send console msg status: {}", status_code)
         }
     }
     StatusCode::OK
