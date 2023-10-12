@@ -17,13 +17,13 @@ pub async fn end_of_match_msg(
         .iter()
         .filter(|p| p.team == "team1")
         .collect();
-    team1_players.sort_by(|a, b| a.stats.damage_dealt.cmp(&b.stats.damage_dealt));
+    team1_players.sort_by(|a, b| b.stats.damage_dealt.cmp(&a.stats.damage_dealt));
     let mut team2_players: Vec<&Player> = dathost_match
         .players
         .iter()
         .filter(|p| p.team == "team2")
         .collect();
-    team2_players.sort_by(|a, b| a.stats.damage_dealt.cmp(&b.stats.damage_dealt));
+    team2_players.sort_by(|a, b| b.stats.damage_dealt.cmp(&a.stats.damage_dealt));
     let mvp = if team1_players.first().unwrap().stats.damage_dealt
         > team2_players.first().unwrap().stats.damage_dealt
     {
