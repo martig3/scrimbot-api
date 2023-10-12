@@ -1,6 +1,7 @@
 use crate::db::{create_match, create_match_stats};
 use crate::errors::Error;
-use crate::models::{DathostMatchEnd, MatchEndParams};
+use crate::models::{ActionRow, DathostMatchEnd, MatchEndParams, MessageComponent};
+use crate::utils::end_of_match_msg;
 use crate::AppState;
 use axum::extract::{Query, State};
 use axum::response::IntoResponse;
@@ -50,10 +51,24 @@ pub async fn match_end(
         .get_file(&dathost_match.server_id, &path)
         .await?;
     println!("uploading demo to s3");
-    let s3_status = state.bucket.put_object(path, &demo).await?.status_code();
+    let s3_status = state.bucket.put_object(&path, &demo).await?.status_code();
     if s3_status != 200 {
         eprintln!("s3 error: {}", s3_status);
         return Err(Error::DemoUploadError);
     }
+    let eom = end_of_match_msg(&state.steam, &dathost_match.0).await?;
+    let bucket_base_url = env::var("BUCKET_BASEURL").expect("BUCKET_BASEURL must be set");
+    let bucket_name = env::var("BUCKET_NAME").expect("BUCKET_NAME must be set");
+    let components = vec![ActionRow {
+        component_type: 1,
+        components: vec![MessageComponent {
+            component_type: 2,
+            label: "Download Demo".to_string(),
+            style: 5,
+            custom_id: None,
+            url: Some(format!("{}/{}/{}", bucket_base_url, bucket_name, &path)),
+        }],
+    }];
+    state.discord.send_msg(&eom, components).await?;
     Ok(StatusCode::OK)
 }

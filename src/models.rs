@@ -37,7 +37,7 @@ pub struct MatchStats {
 pub struct Player {
     pub match_id: String,
     #[serde(deserialize_with = "deserialize_number_from_string")]
-    pub steam_id_64: i64,
+    pub steam_id_64: u64,
     pub team: String,
     pub connected: bool,
     pub kicked: bool,
@@ -97,4 +97,35 @@ pub struct DathostMatch {
 #[derive(Deserialize)]
 pub struct MatchEndParams {
     pub wait_for_gotv: Option<bool>,
+}
+#[derive(Serialize, Deserialize)]
+pub struct SteamUser {
+    #[serde(deserialize_with = "deserialize_number_from_string")]
+    pub steamid: u64,
+    pub personaname: String,
+}
+#[derive(Serialize, Deserialize)]
+pub struct PlayerSummaries {
+    pub players: Vec<SteamUser>,
+}
+#[derive(Serialize, Deserialize)]
+pub struct PlayerSummariesResponse {
+    pub response: PlayerSummaries,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct MessageComponent {
+    #[serde(rename = "type")]
+    pub component_type: i8,
+    pub label: String,
+    pub style: i8,
+    pub custom_id: Option<String>,
+    pub url: Option<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ActionRow {
+    #[serde(rename = "type")]
+    pub component_type: i8,
+    pub components: Vec<MessageComponent>,
 }

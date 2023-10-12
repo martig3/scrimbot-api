@@ -1,8 +1,11 @@
 mod dathost;
 mod db;
+mod discord;
 mod errors;
-mod models;
+pub mod models;
 pub mod routes;
+mod steam;
+mod utils;
 
 use axum::body::boxed;
 use axum::http::{header, HeaderValue, Method};
@@ -10,7 +13,9 @@ use axum::{body::Bytes, Router};
 use std::env;
 
 use crate::dathost::DathostClient;
+use crate::discord::DiscordClient;
 use crate::routes::routes;
+use crate::steam::SteamClient;
 use dotenvy::dotenv;
 use s3::creds::Credentials;
 use s3::{Bucket, Region};
@@ -27,12 +32,15 @@ use tower_http::{
     LatencyUnit, ServiceBuilderExt,
 };
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
 static MIGRATOR: Migrator = sqlx::migrate!();
 #[derive(Clone)]
 pub struct AppState {
     db: PgPool,
     dathost: DathostClient,
     bucket: Bucket,
+    discord: DiscordClient,
+    steam: SteamClient,
 }
 
 #[tokio::main]
@@ -92,7 +100,9 @@ async fn main() {
         tracing::error!("Migration error: {}", error);
         std::process::exit(1);
     }
-    let dathost = DathostClient::new().expect("unable to create DatHost client");
+    let dathost = DathostClient::new().expect("unable to create Dathost client");
+    let discord = DiscordClient::new().expect("unable to create Discord Client");
+    let steam = SteamClient::new().expect("unable to create Steam Client");
 
     let region = env::var("AWS_REGION").unwrap_or_else(|_| "auto".to_string());
     let endpoint = env::var("AWS_ENDPOINT").expect("AWS_ENDPOINT must be set");
@@ -109,6 +119,8 @@ async fn main() {
         db: pool,
         dathost,
         bucket,
+        discord,
+        steam,
     };
 
     let app = Router::new()
