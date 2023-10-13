@@ -10,10 +10,9 @@ mod utils;
 
 use axum::body::boxed;
 use axum::http::{header, HeaderValue, Method};
-use axum::{body::Bytes, middleware, Router};
+use axum::{body::Bytes, Router};
 use std::env;
 
-use crate::auth::auth;
 use crate::dathost::DathostClient;
 use crate::discord::DiscordClient;
 use crate::routes::routes;
@@ -98,8 +97,7 @@ async fn main() {
         .insert_response_header_if_not_present(
             header::CONTENT_TYPE,
             HeaderValue::from_static("application/json"),
-        )
-        .layer(middleware::from_fn(auth));
+        );
     let pool = PgPool::connect(&env::var("DATABASE_URL").expect("Expected DATABASE_URL"))
         .await
         .unwrap();

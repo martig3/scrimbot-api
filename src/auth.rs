@@ -5,6 +5,7 @@ use axum::response::Response;
 use std::env;
 
 pub async fn auth<B>(req: Request<B>, next: Next<B>) -> Result<Response, StatusCode> {
+    tracing::debug!("authenticating");
     let Ok(token) = env::var("AUTH_TOKEN") else {
         return Ok(next.run(req).await)
     };
