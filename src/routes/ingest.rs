@@ -1,9 +1,10 @@
 use crate::models::ServerId;
 use crate::AppState;
 use axum::extract::State;
+use axum::headers::UserAgent;
 use axum::response::IntoResponse;
 use axum::routing::post;
-use axum::Router;
+use axum::{Router, TypedHeader};
 use regex::Regex;
 use reqwest::StatusCode;
 use std::env;
@@ -12,7 +13,14 @@ pub fn ingest_routes() -> Router<AppState> {
     Router::new().route("/logs", post(post_logs))
 }
 
-pub async fn post_logs(state: State<AppState>, body: String) -> impl IntoResponse {
+pub async fn post_logs(
+    TypedHeader(user_agent): TypedHeader<UserAgent>,
+    state: State<AppState>,
+    body: String,
+) -> impl IntoResponse {
+    if !user_agent.to_string().contains("Valve/Steam") {
+        return StatusCode::UNAUTHORIZED;
+    }
     let server_id = &ServerId(env::var("DATHOST_SERVER_ID").unwrap());
     let lines = body.split("\n");
     for line in lines {
