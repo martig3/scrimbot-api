@@ -29,7 +29,7 @@ pub async fn match_end(
     create_match_stats(&state.db, &dathost_match.0, created_match.id).await?;
     let delay = match query.wait_for_gotv {
         Some(b) => b,
-        None => false,
+        None => true,
     };
     if delay {
         let tv_delay = env::var("TV_DELAY")
