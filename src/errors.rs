@@ -1,7 +1,7 @@
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use serde_json::json;
-
+#[allow(dead_code)]
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error(transparent)]

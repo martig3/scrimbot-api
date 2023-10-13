@@ -7,7 +7,6 @@ use bytes::Bytes;
 use reqwest::{Client, Result, StatusCode};
 
 use crate::models::ServerId;
-#[allow(dead_code)]
 #[derive(Clone)]
 pub struct DathostClient(Client);
 
