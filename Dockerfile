@@ -1,16 +1,10 @@
-#build stage
-FROM openjdk:alpine AS builder
-WORKDIR .
-COPY . .
-RUN ./gradlew build install
+FROM rust:alpine AS build
 
-#final stage
-FROM alpine:latest
-RUN apk update
-RUN apk --no-cache add ca-certificates
-RUN apk add --update openjdk11 tzdata curl unzip bash
-RUN rm -rf /var/cache/apk/*
-COPY --from=builder build/install/* /app
-ENTRYPOINT /app/bin/scrimbot-api
-LABEL Name=martig3/scrimbot-api Version=0.6.0
-EXPOSE 8080
+RUN apk add --no-cache build-base && mkdir -p /app
+COPY . /app
+WORKDIR /app
+RUN cargo build --release && strip target/release/scrimbot-api
+
+FROM scratch
+COPY --from=build /app/target/release/scrimbot-api .
+CMD [ "/scrimbot-api" ]

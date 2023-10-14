@@ -5,9 +5,9 @@ Microservice for processing CSGO end of match payloads and statistics queries.
 ## Features
 
 - End of match printout to Discord text channel
-- Upload demo files to Dropbox
-- Save match statistics in database
-- Statistics API
+- Handle automating technical timeouts in matches
+- Upload demo files to S3 compatible API 
+- Save match statistics to database
 
 ### End of Match Printout Example
 
@@ -23,18 +23,22 @@ Extract release .zip and navigate to the `/bin` directory and run your platform'
 
 ### Environment Variables
 
-|Env Variable|Description|
-|---|---|
-|DISCORD_BOT_TOKEN| Your app's discord bot token|
-|DISCORD_TEXTCHANNEL_ID| Id of text channel end of match message gets sent to|
-|STATS_USER| Username for Scrimbot-API auth|
-|STATS_PASSWORD| Password for Scrimbot-API auth|
-|DB_URL| Postgres DB URL|
-|DB_USER| DB Username|
-|DB_PASSWORD| DB Password|
-|STEAM_WEB_API_KEY| Your Steam Web API key|
-|DROPBOX_TOKEN| Your discord api token|
-|DATHOST_USERNAME| Your dathost account username|
-|DATHOST_PASSWORD| Your dathost account password|
-|API_LOGGING_LEVEL| Optional logging level, defaults to `NONE`|
+```dotenv
+DATHOST_USER=
+DATHOST_PASSWORD=
+DATABASE_URL=postgres://postgres:postgres@localhost/scrimbot
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+BUCKET_NAME=
+AWS_ENDPOINT=
+DATHOST_SERVER_ID=
+BUCKET_BASE_URL=
+STEAM_KEY=
+DISCORD_TOKEN=
+DISCORD_CHANNEL_ID=
+AUTH_TOKEN=
+```
 
+## Roadmap
+
+- Re-write Statistics API
