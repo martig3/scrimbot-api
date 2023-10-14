@@ -1,0 +1,63 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "insert into matches (map, team1_score, team2_score, team1_name, team2_name, completed_at)\n            values ($1, $2, $3, $4, $5, $6) returning id, map, team1_score, team2_score, team1_name, team2_name, completed_at",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "map",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "team1_score",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "team2_score",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "team1_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "team2_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "completed_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Int4",
+        "Int4",
+        "Text",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "78452597bdf67fa9b2179ac4f682c9511cce1f843f2c58e730b5dc278e60b572"
+}

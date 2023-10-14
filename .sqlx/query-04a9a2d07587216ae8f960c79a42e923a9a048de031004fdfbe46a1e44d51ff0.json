@@ -1,0 +1,37 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "insert into match_stats (\n       steam_id,\n       match_id,\n       team,\n       kills,\n       assists,\n       deaths,\n       adr,\n       n2ks,\n       n3ks,\n       n4ks,\n       n5ks,\n       kills_with_headshot,\n       kills_with_pistol,\n       kills_with_sniper,\n       damage_dealt,\n       entry_attempts,\n       entry_successes,\n       flashes_thrown,\n       flashes_successful,\n       flashes_enemies_blinded,\n       utility_thrown,\n       utility_damage,\n       n1vx_attempts,\n       n1vx_wins) \n       values(\n       $1,\n       $2,\n       $3,\n       $4,\n       $5,\n       $6,\n       $7,\n       $8,\n       $9,\n       $10,\n       $11,\n       $12,\n       $13,\n       $14,\n       $15,\n       $16,\n       $17,\n       $18,\n       $19,\n       $20,\n       $21,\n       $22,\n       $23,\n       $24\n       );",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int4",
+        "Varchar",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Float8",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "04a9a2d07587216ae8f960c79a42e923a9a048de031004fdfbe46a1e44d51ff0"
+}
