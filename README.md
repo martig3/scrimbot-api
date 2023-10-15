@@ -24,6 +24,8 @@ Extract release .zip and navigate to the `/bin` directory and run your platform'
 ### Environment Variables
 
 ```dotenv
+ENV="dev || prd"
+PORT="defaults to 3000"
 DATHOST_USER=
 DATHOST_PASSWORD=
 DATABASE_URL=postgres://postgres:postgres@localhost/scrimbot

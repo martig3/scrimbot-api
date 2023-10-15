@@ -134,7 +134,13 @@ async fn main() {
         .with_state(shared_state)
         .layer(middleware);
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let host = matches!(env::var("ENV").as_deref(), Ok("prd"))
+        .then_some([0, 0, 0, 0])
+        .unwrap_or([127, 0, 0, 1]);
+    let port = env::var("PORT")
+        .map(|p| p.parse::<u16>().expect("PORT is not a valid u16"))
+        .unwrap_or(3000);
+    let addr = SocketAddr::from((host, port));
     tracing::info!("listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
