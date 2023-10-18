@@ -40,8 +40,10 @@ pub async fn match_end(
         tracing::info!("sleeping for {} sec", tv_delay);
         sleep(Duration::from_secs(tv_delay)).await;
     }
+    tracing::info!("stopping server {}", &dathost_match.server_id);
     let stop_status = state.dathost.stop_server(&dathost_match.server_id).await?;
     if stop_status.as_u16() != 200 {
+        tracing::error!("error stopping server {}", stop_status);
         return Err(Error::StopServerError);
     }
     let path = format!("{}.dem", dathost_match.id);
